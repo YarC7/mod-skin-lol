@@ -1,9 +1,83 @@
-h1 {
-  text-align: center;
-  color: #1a1a1a;
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
+}
+
+h1 {
+  margin: 0;
+  color: #1a1a1a;
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+#settingsToggle {
+  background: #f5f5f5;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#settingsToggle:hover {
+  background: #e0e0e0;
+}
+
+#settingsPanel {
+  background: #fcfcfc;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.settings-group {
+  margin-bottom: 15px;
+}
+
+.settings-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.path-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.path-input span {
+  flex-grow: 1;
+  font-size: 13px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.path-input button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.path-input button:hover {
+  background: #0056b3;
 }
 
 body {

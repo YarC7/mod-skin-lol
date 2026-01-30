@@ -3,13 +3,33 @@
 
 <head>
   <meta charset="UTF-8" />
-
   <title>League of Legends Champions</title>
 </head>
 
 <body>
   <div id="listView">
-    <h1>League of Legends Champions</h1>
+    <div id="header">
+      <h1>League of Legends Champions</h1>
+      <button id="settingsToggle">⚙️ Settings</button>
+    </div>
+
+    <div id="settingsPanel" style="display: none;">
+      <div class="settings-group">
+        <label>CS-LOL Manager Path:</label>
+        <div class="path-input">
+          <span id="managerPathDisplay">Not set</span>
+          <button id="selectManagerButton">Browse</button>
+        </div>
+      </div>
+      <div class="settings-group">
+        <label>Skins Repository Path (lol-skins):</label>
+        <div class="path-input">
+          <span id="skinsRepoPathDisplay">Not set</span>
+          <button id="selectSkinsRepoButton">Browse</button>
+        </div>
+      </div>
+    </div>
+
     <input type="text" id="searchInput" placeholder="Search champions..." />
     <div id="championList"></div>
   </div>

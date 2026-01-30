@@ -13,18 +13,20 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
+const SETTINGS_FILE = path.join(app.getPath("userData"), "settings.json");
+
+type Settings = {
+  managerPath: string;
+  skinsRepoPath: string;
+};
+
 type FileDialogResult = { canceled: true } | { canceled: false; path: string };
 type LaunchResult = { success: boolean; message?: string };
-
 const registerIpcHandlers = (): void => {
-  ipcMain.handle("launcher:select-exe", async (): Promise<FileDialogResult> => {
+  ipcMain.handle("launcher:select-folder", async (): Promise<FileDialogResult> => {
     const result = await dialog.showOpenDialog({
-      title: "Select CS-LOL Manager Executable",
-      properties: ["openFile"],
-      filters: [
-        { name: "Executable Files", extensions: ["exe", "bat", "cmd"] },
-        { name: "All Files", extensions: ["*"] },
-      ],
+      title: "Select Folder",
+      properties: ["openDirectory"],
     });
 
     if (result.canceled || result.filePaths.length === 0) {
@@ -37,68 +39,121 @@ const registerIpcHandlers = (): void => {
     };
   });
 
-  ipcMain.handle(
-    "launcher:run-exe",
-    async (_event, executablePath: string): Promise<LaunchResult> => {
-      if (!executablePath) {
-        return {
-          success: false,
-          message: "No executable selected.",
-        };
-      }
+  ipcMain.handle("launcher:select-file", async (_event, filters: any): Promise<FileDialogResult> => {
+    const result = await dialog.showOpenDialog({
+      title: "Select File",
+      properties: ["openFile"],
+      filters: filters,
+    });
 
-      return await new Promise<LaunchResult>((resolve) => {
-        try {
-          const child = spawn(executablePath, {
-            detached: true,
-            stdio: "ignore",
-            windowsHide: false,
-          });
+    if (result.canceled || result.filePaths.length === 0) {
+      return { canceled: true };
+    }
 
-          let resolved = false;
-          const complete = (result: LaunchResult): void => {
-            if (resolved) {
-              return;
-            }
+    return {
+      canceled: false,
+      path: result.filePaths[0],
+    };
+  });
 
-            resolved = true;
-            resolve(result);
-          };
+  ipcMain.handle("launcher:save-settings", async (_event, settings: Settings) => {
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+    return true;
+  });
 
-          child.once("error", (error) => {
-            complete({
-              success: false,
-              message:
-                error instanceof Error
-                  ? error.message
-                  : "Unable to start CS-LOL Manager.",
-            });
-          });
+  ipcMain.handle("launcher:load-settings", async (): Promise<Settings> => {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      return JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+    }
+    return { managerPath: "", skinsRepoPath: "" };
+  });
 
-          child.once("spawn", () => {
-            child.unref();
-            complete({ success: true });
-          });
-        } catch (error) {
-          resolve({
-            success: false,
-            message:
-              error instanceof Error
-                ? error.message
-                : "Unable to start CS-LOL Manager.",
-          });
+  ipcMain.handle("launcher:find-mod-file", async (_event, championId: string, skinNameEn: string, skinNum: number): Promise<string | null> => {
+    if (!fs.existsSync(SETTINGS_FILE)) return null;
+    const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+    if (!settings.skinsRepoPath) return null;
+
+    const champDir = path.join(settings.skinsRepoPath, "skins", championId);
+    if (!fs.existsSync(champDir)) return null;
+
+    const files = fs.readdirSync(champDir);
+
+    // 1. Try exact match with En name (e.g. "Justicar Aatrox.zip")
+    const exactMatch = files.find(f => f.toLowerCase() === `${skinNameEn.toLowerCase()}.zip` || f.toLowerCase() === `${skinNameEn.toLowerCase()}.fantome`);
+    if (exactMatch) return path.join(champDir, exactMatch);
+
+    // 2. Default skin (index 0)
+    if (skinNum === 0) {
+      const defaultFile = files.find(f => f.toLowerCase() === `${championId.toLowerCase()}.zip` || f.toLowerCase() === `${championId.toLowerCase()}.fantome`);
+      if (defaultFile) return path.join(champDir, defaultFile);
+    }
+
+    // 3. Fallback: Check if file contains the skin name parts
+    const partialMatch = files.find(f => {
+      const lowerF = f.toLowerCase();
+      const lowerName = skinNameEn.toLowerCase();
+      return (lowerF.includes(lowerName) || lowerName.includes(lowerF.replace(/\.(zip|fantome)$/, ""))) && (f.endsWith(".zip") || f.endsWith(".fantome"));
+    });
+
+    if (partialMatch) return path.join(champDir, partialMatch);
+
+    return null;
+  });
+
+  ipcMain.handle("launcher:list-mod-files", async (_event, championId: string): Promise<string[]> => {
+    if (!fs.existsSync(SETTINGS_FILE)) return [];
+    const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+    if (!settings.skinsRepoPath) return [];
+
+    const champDir = path.join(settings.skinsRepoPath, "skins", championId);
+    if (!fs.existsSync(champDir)) return [];
+
+    return fs.readdirSync(champDir)
+      .filter(f => f.endsWith(".zip") || f.endsWith(".fantome"))
+      .map(f => path.join(champDir, f));
+  });
+
+  ipcMain.handle("launcher:run-mod-tools", async (_event, command: string, args: string[]) => {
+    const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+    if (!settings.managerPath) throw new Error("Manager path not set");
+
+    const modToolsPath = path.join(settings.managerPath, "cslol-tools", "mod-tools.exe");
+    if (!fs.existsSync(modToolsPath)) throw new Error("mod-tools.exe not found");
+
+    return new Promise((resolve, reject) => {
+      const child = spawn(modToolsPath, [command, ...args]);
+      let stdout = "";
+      let stderr = "";
+
+      child.stdout.on("data", (data) => (stdout += data.toString()));
+      child.stderr.on("data", (data) => (stderr += data.toString()));
+
+      child.on("close", (code) => {
+        if (code === 0) {
+          resolve({ success: true, stdout });
+        } else {
+          resolve({ success: false, stdout, stderr, code });
         }
       });
-    },
-  );
+
+      child.on("error", (err) => {
+        reject(err);
+      });
+    });
+  });
 
   ipcMain.handle(
     "load-champions",
-    async (): Promise<{ name: string; icon: string }[]> => {
+    async (): Promise<any[]> => {
       try {
-        const filePath = path.join(app.getAppPath(), "champions.json");
+        const filePath = path.join(app.getAppPath(), "champion_skins_full.json");
         const data = fs.readFileSync(filePath, "utf-8");
-        return JSON.parse(data);
+        const allData = JSON.parse(data);
+        return allData.map((item: any) => ({
+          id: item.id,
+          name_en: item.name_en,
+          name_vi: item.name_vi
+        }));
       } catch (error) {
         console.error("Error loading champions:", error);
         return [];
@@ -110,10 +165,10 @@ const registerIpcHandlers = (): void => {
     "load-skins",
     async (_event, championId: string): Promise<any> => {
       try {
-        const filePath = path.join(app.getAppPath(), "champion_skins.json");
+        const filePath = path.join(app.getAppPath(), "champion_skins_full.json");
         const data = fs.readFileSync(filePath, "utf-8");
         const allSkins = JSON.parse(data);
-        return allSkins.find((item: any) => item.championId === championId) || null;
+        return allSkins.find((item: any) => item.id === championId) || null;
       } catch (error) {
         console.error("Error loading skins:", error);
         return null;
