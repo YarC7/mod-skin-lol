@@ -22,6 +22,8 @@ const skinTitle = document.getElementById("skinTitle") as HTMLDivElement;
 const searchInput = document.getElementById("searchInput") as HTMLInputElement;
 const championList = document.getElementById("championList") as HTMLDivElement;
 
+let currentSelectedSkin: Skin | null = null;
+
 interface ChampionSkins {
   championName: string;
   championId: string;
@@ -92,13 +94,25 @@ function renderSkins(skins: Skin[]) {
     div.innerHTML = `
       <img src="${skin.loadingUrl}" alt="${skin.skinName}" />
       <span>${skin.skinName}</span>
+      <button class="apply-skin-btn">Apply</button>
     `;
+
+    // Select skin when clicking anywhere on the item
     div.addEventListener("click", () => selectSkin(skin, div));
+
+    // Handle apply button specifically
+    const btn = div.querySelector(".apply-skin-btn") as HTMLButtonElement;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation(); // Don't trigger the div's click
+      alert(`Đã áp dụng trang phục: ${skin.skinName}`);
+    });
+
     skinList.appendChild(div);
   });
 }
 
 function selectSkin(skin: Skin, element: HTMLElement) {
+  currentSelectedSkin = skin;
   document.querySelectorAll(".skin-item").forEach(el => el.classList.remove("active"));
   element.classList.add("active");
 
