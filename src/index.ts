@@ -421,7 +421,7 @@ const createWindow = (): void => {
     width: 960,
     minHeight: 560,
     minWidth: 900,
-    icon: path.join(__dirname, 'icon.ico'),
+    icon: path.join(app.getAppPath(), 'assets', 'icon.ico'),
     autoHideMenuBar: true,
     backgroundColor: "#ffffff",
     title: "CS-LOL Launcher",
