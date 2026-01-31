@@ -190,34 +190,37 @@ const registerIpcHandlers = (): void => {
   });
 
   ipcMain.handle("launcher:run-mod-tools", async (_event, command: string, args: string[]) => {
-    const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
-    if (!settings.managerPath) throw new Error("Manager path not set");
+    try {
+      const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+      if (!settings.managerPath) throw new Error("Manager path not set");
 
-    const modToolsPath = path.join(settings.managerPath, "cslol-tools", "mod-tools.exe");
-    if (!fs.existsSync(modToolsPath)) throw new Error("mod-tools.exe not found");
+      const toolsExe = path.join(settings.managerPath, "cslol-tools", "mod-tools.exe");
+      if (!fs.existsSync(toolsExe)) throw new Error("mod-tools.exe not found");
 
-    return new Promise((resolve, reject) => {
-      const child = spawn(modToolsPath, [command, ...args], {
-        cwd: settings.managerPath
-      });
-      let stdout = "";
-      let stderr = "";
-
-      child.stdout.on("data", (data) => (stdout += data.toString()));
-      child.stderr.on("data", (data) => (stderr += data.toString()));
-
-      child.on("close", (code) => {
-        if (code === 0) {
-          resolve({ success: true, stdout });
-        } else {
-          resolve({ success: false, stdout, stderr, code });
-        }
+      // Chuẩn hóa và bọc ngoặc kép cho từng tham số
+      const processedArgs = args.map(arg => {
+        let a = arg.replace(/\//g, "\\"); // Chuyển / thành \ cho chuẩn Windows
+        return `"${a}"`; // Bọc tất cả trong ngoặc kép để an toàn tuyệt đối
       });
 
-      child.on("error", (err) => {
-        reject(err);
+      const fullCommand = `"${toolsExe}" ${command} ${processedArgs.join(" ")}`;
+      log.info(`System: Executing command: ${fullCommand}`);
+
+      const { exec } = require("child_process");
+      return new Promise((resolve) => {
+        exec(fullCommand, { cwd: settings.managerPath }, (error: any, stdout: string, stderr: string) => {
+          if (error) {
+            log.error(`System: mod-tools exit with error. Stdout: ${stdout}, Stderr: ${stderr}`);
+            resolve({ success: false, stdout, stderr });
+          } else {
+            resolve({ success: true, stdout, stderr });
+          }
+        });
       });
-    });
+    } catch (e: any) {
+      log.error("System: Error in run-mod-tools:", e);
+      return { success: false, stderr: e.message };
+    }
   });
 
   ipcMain.handle("launcher:kill-manager", async () => {
