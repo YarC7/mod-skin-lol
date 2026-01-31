@@ -25,6 +25,7 @@ const getResourcePath = (filename: string) => {
 type Settings = {
   managerPath: string;
   skinsRepoPath: string;
+  gamePath?: string; // Thêm trường cache đường dẫn game
 };
 
 type FileDialogResult = { canceled: true } | { canceled: false; path: string };
@@ -124,29 +125,40 @@ const registerIpcHandlers = (): void => {
     try {
       if (!fs.existsSync(SETTINGS_FILE)) return "";
       const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+
+      // 1. Nếu đã có trong cache settings, ưu tiên dùng luôn
+      if (settings.gamePath) return settings.gamePath;
+
       if (!settings.managerPath) return "";
 
-      // 1. Thử tìm trong config.yaml
-      const configYamlPath = path.join(settings.managerPath, "config.yaml");
-      if (fs.existsSync(configYamlPath)) {
-        const content = fs.readFileSync(configYamlPath, "utf-8");
-        const match = content.match(/game(?:Path|_path|path)?\s*:\s*["']?(.*?)["']?\s*$/mi);
-        if (match && match[1]) {
-          const p = match[1].trim();
-          if (p && p !== '""' && p !== "''") return p;
-        }
-      }
+      let detectedPath = "";
 
-      // 2. Thử tìm trong config.ini (Dành cho một số phiên bản Manager khác)
+      // 2. Thử tìm trong config.ini (Ưu tiên vì user đang dùng file này)
       const configIniPath = path.join(settings.managerPath, "config.ini");
       if (fs.existsSync(configIniPath)) {
         const content = fs.readFileSync(configIniPath, "utf-8");
-        // Hỗ trợ thêm leaguePath từ file config.ini của user
-        const match = content.match(/(?:game|league)(?:Path|_path|path)?\s*[:=]\s*["']?(.*?)["']?\s*$/mi);
+        // Regex bắt leaguePath=... xử lý cả khoảng trắng và xuống dòng Windows (\r)
+        const match = content.match(/^leaguePath\s*=\s*(.*)$/mi);
         if (match && match[1]) {
-          const p = match[1].trim();
-          if (p && p !== '""' && p !== "''") return p;
+          detectedPath = match[1].trim().replace(/\r/g, "");
         }
+      }
+
+      // 3. Thử tìm trong config.yaml (Dự phòng)
+      if (!detectedPath) {
+        const configYamlPath = path.join(settings.managerPath, "config.yaml");
+        if (fs.existsSync(configYamlPath)) {
+          const content = fs.readFileSync(configYamlPath, "utf-8");
+          const match = content.match(/game(?:Path|_path|path)?\s*:\s*["']?(.*?)["']?\s*$/mi);
+          if (match && match[1]) detectedPath = match[1].trim();
+        }
+      }
+
+      // Nếu tìm thấy, lưu vào cache để lần sau không phải quét lại
+      if (detectedPath && detectedPath !== '""' && detectedPath !== "''") {
+        settings.gamePath = detectedPath;
+        fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+        return detectedPath;
       }
     } catch (e) {
       console.error("Error detecting game path:", e);
@@ -387,6 +399,7 @@ const createWindow = (): void => {
     width: 960,
     minHeight: 560,
     minWidth: 900,
+    icon: path.join(__dirname, 'icon.ico'),
     autoHideMenuBar: true,
     backgroundColor: "#ffffff",
     title: "CS-LOL Launcher",

@@ -18,6 +18,7 @@ import { rendererConfig } from './webpack.renderer.config';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    icon: './src/icon.ico',
     extraResource: [
       "./champions.json",
       "./champion_skins_full.json"
@@ -27,10 +28,12 @@ const config: ForgeConfig = {
   makers: [
     new MakerSquirrel({
       name: 'ModSkinLoL',
+      setupIcon: './assets/icon.ico', // icon installer
+      iconUrl: 'https://raw.githubusercontent.com/YarC7/mod-skin-lol/main/assets/icon.ico',
     }),
   ],
   publishers: [
-    new PublisherGithub({
+    new PublishBrowserWindowerGithub({
       repository: {
         owner: 'YarC7',
         name: 'mod-skin-lol',
