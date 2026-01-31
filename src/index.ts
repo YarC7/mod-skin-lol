@@ -241,44 +241,54 @@ const registerIpcHandlers = (): void => {
 
   ipcMain.handle("launcher:enable-mod-in-profile", async (_event, modName: string) => {
     try {
+      if (!fs.existsSync(SETTINGS_FILE)) return false;
       const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
       if (!settings.managerPath) return false;
 
-      // Danh sách các file profile tiềm năng (Default.json, Default.config, Default/config.yaml)
-      const profileFiles = [
-        path.join(settings.managerPath, "profiles", "Default.json"),
-        path.join(settings.managerPath, "profiles", "Default.config"),
-        path.join(settings.managerPath, "profiles", "Default", "config.yaml") // Thêm định dạng YAML mới
-      ];
+      const profilesDir = path.join(settings.managerPath, "profiles");
+      if (!fs.existsSync(profilesDir)) return false;
 
-      for (const profilePath of profileFiles) {
-        if (!fs.existsSync(profilePath)) continue;
+      // Tìm tất cả các file liên quan đến profile (Default, Default Profile, v.v.)
+      const files = fs.readdirSync(profilesDir);
 
-        console.log(`Updating profile at: ${profilePath}`);
-        if (profilePath.endsWith(".yaml")) {
-          // Xử lý đơn giản cho file YAML (chỉ thay thế/xóa các dòng mod:)
-          let content = fs.readFileSync(profilePath, "utf-8");
-          // Xóa toàn bộ khối mods hoặc các dòng mod: true
-          // Một cách an toàn hơn là reset khối mods:
-          if (content.includes("mods:")) {
-            content = content.replace(/mods:[\s\S]*?(?=\n\w|$)/, `mods:\n  ${modName}: true`);
-          } else {
-            content += `\nmods:\n  ${modName}: true`;
-          }
-          fs.writeFileSync(profilePath, content);
-        } else {
-          // Xử lý file JSON (.json hoặc .config)
-          let config: any = { mods: {} };
+      for (const file of files) {
+        const fullPath = path.join(profilesDir, file);
+        const lowerFile = file.toLowerCase();
+
+        // 1. Xử lý file .profile (Dạng text thuần, mỗi dòng 1 tên mod)
+        if (lowerFile.endsWith(".profile")) {
+          console.log(`Updating .profile file: ${file}`);
+          fs.writeFileSync(fullPath, modName + "\n");
+        }
+
+        // 2. Xử lý file .config hoặc .json (Dạng JSON)
+        else if (lowerFile.endsWith(".config") || lowerFile.endsWith(".json")) {
+          console.log(`Updating JSON config: ${file}`);
           try {
-            const content = fs.readFileSync(profilePath, "utf-8");
-            if (content.trim()) config = JSON.parse(content);
-          } catch (jsonErr) {
-            console.warn(`Malformed JSON in ${profilePath}, resetting.`);
-          }
+            let config: any = { mods: {} };
+            const content = fs.readFileSync(fullPath, "utf-8");
+            if (content.trim()) {
+              try { config = JSON.parse(content); } catch (e) { /* ignore */ }
+            }
+            config.mods = {};
+            config.mods[modName] = true;
+            fs.writeFileSync(fullPath, JSON.stringify(config, null, 2));
+          } catch (e) { console.warn(e); }
+        }
 
-          config.mods = {};
-          config.mods[modName] = true;
-          fs.writeFileSync(profilePath, JSON.stringify(config, null, 2));
+        // 3. Xử lý thư mục profile (Chứa config.yaml bên trong)
+        else if (fs.lstatSync(fullPath).isDirectory()) {
+          const yamlPath = path.join(fullPath, "config.yaml");
+          if (fs.existsSync(yamlPath)) {
+            console.log(`Updating YAML config in folder: ${file}`);
+            let content = fs.readFileSync(yamlPath, "utf-8");
+            if (content.includes("mods:")) {
+              content = content.replace(/mods:[\s\S]*?(?=\n\w|$)/, `mods:\n  ${modName}: true`);
+            } else {
+              content += `\nmods:\n  ${modName}: true`;
+            }
+            fs.writeFileSync(yamlPath, content);
+          }
         }
       }
       return true;
@@ -286,6 +296,40 @@ const registerIpcHandlers = (): void => {
       console.error("Error in enable-mod-in-profile:", e);
       return false;
     }
+  });
+
+  ipcMain.handle("launcher:get-profile-paths", async () => {
+    try {
+      if (!fs.existsSync(SETTINGS_FILE)) return null;
+      const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+      if (!settings.managerPath) return null;
+
+      const profilesDir = path.join(settings.managerPath, "profiles");
+      if (!fs.existsSync(profilesDir)) return null;
+
+      // Ưu tiên "Default Profile" sau đó đến "Default"
+      const names = ["Default Profile", "Default"];
+      for (const name of names) {
+        const folderPath = path.join(profilesDir, name);
+        const configPath = path.join(profilesDir, `${name}.config`);
+        const jsonPath = path.join(profilesDir, `${name}.json`);
+
+        let foundConfig = "";
+        if (fs.existsSync(configPath)) foundConfig = configPath;
+        else if (fs.existsSync(jsonPath)) foundConfig = jsonPath;
+
+        if (fs.existsSync(folderPath) || foundConfig) {
+          return {
+            name: name,
+            folder: folderPath,
+            config: foundConfig
+          };
+        }
+      }
+    } catch (e) {
+      console.error("Error getting profile paths:", e);
+    }
+    return null;
   });
 
   ipcMain.handle(

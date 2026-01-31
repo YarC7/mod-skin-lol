@@ -53,6 +53,7 @@ declare global {
       getGamePath: () => Promise<string>;
       enableModInProfile: (modName: string) => Promise<boolean>;
       checkForUpdates: () => Promise<any>;
+      getProfilePaths: () => Promise<{ name: string; folder: string; config: string } | null>;
     };
   }
 }
@@ -278,10 +279,11 @@ function renderSkins(skins: Skin[]) {
         // 5. MkOverlay
         btn.textContent = "Patching...";
         const gamePath = await window.electronAPI.getGamePath();
+        const profileInfo = await window.electronAPI.getProfilePaths();
 
         const overlayRes = await window.electronAPI.runModTools("mkoverlay", [
           `installed`,
-          `profiles/Default`,
+          profileInfo ? `profiles/${profileInfo.name}` : `profiles/Default`,
           gamePath || ".",
           `--mods:${modName}`,
           "--ignoreConflict"
@@ -297,8 +299,8 @@ function renderSkins(skins: Skin[]) {
         // 6. Run Patcher (RunOverlay)
         btn.textContent = "Running Patcher...";
         await window.electronAPI.runModTools("runoverlay", [
-          `profiles/Default`,
-          `profiles/Default.config`,
+          profileInfo ? `profiles/${profileInfo.name}` : `profiles/Default`,
+          profileInfo?.config || `profiles/Default.config`,
           "--opts:configless"
         ]);
 
