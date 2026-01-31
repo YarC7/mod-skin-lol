@@ -14,7 +14,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   listModFiles: (championId: string) => ipcRenderer.invoke("launcher:list-mod-files", championId),
   runModTools: (command: string, args: string[]) => ipcRenderer.invoke("launcher:run-mod-tools", command, args),
   startManager: () => ipcRenderer.invoke("launcher:start-manager"),
+  killManager: () => ipcRenderer.invoke("launcher:kill-manager"),
   clearMods: () => ipcRenderer.invoke("launcher:clear-mods"),
   getGamePath: () => ipcRenderer.invoke("launcher:get-game-path"),
   enableModInProfile: (modName: string) => ipcRenderer.invoke("launcher:enable-mod-in-profile", modName),
+  checkForUpdates: () => ipcRenderer.invoke("launcher:check-for-updates"),
 });

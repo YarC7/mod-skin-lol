@@ -175,6 +175,17 @@ const registerIpcHandlers = (): void => {
     });
   });
 
+  ipcMain.handle("launcher:kill-manager", async () => {
+    const { exec } = require("child_process");
+    return new Promise((resolve) => {
+      // /F: Force kill, /IM: Image Name, /T: Kill child processes
+      exec('taskkill /F /IM cslol-manager.exe /T', () => {
+        // Luôn resolve true kể cả khi nó không chạy (lỗi thoát code 128)
+        resolve(true);
+      });
+    });
+  });
+
   ipcMain.handle("launcher:start-manager", async () => {
     const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
     if (!settings.managerPath) throw new Error("Manager path not set");
@@ -360,21 +371,39 @@ app.whenReady().then(() => {
   registerIpcHandlers();
   createWindow();
 
-  // Basic Auto-update configuration
-  if (app.isPackaged) {
-    autoUpdater.checkForUpdatesAndNotify();
-  }
+  // Cấu hình Update: Không tự động tải, để user cho phép mới tải
+  autoUpdater.autoDownload = false;
 
-  autoUpdater.on("update-available", () => {
-    console.log("Update available.");
+  ipcMain.handle("launcher:check-for-updates", async () => {
+    if (app.isPackaged) {
+      return autoUpdater.checkForUpdates();
+    }
+    return { success: false, message: "Only available in packaged app" };
   });
 
-  autoUpdater.on("update-downloaded", () => {
+  autoUpdater.on("update-available", (info) => {
     dialog.showMessageBox({
       type: "info",
-      title: "Update Available",
-      message: "A new version has been downloaded. Restart the application to apply the updates?",
-      buttons: ["Restart", "Later"]
+      title: "Cập nhật mới",
+      message: `Phiên bản ${info.version} đã sẵn sàng. Bạn có muốn tải về ngay không?`,
+      buttons: ["Tải về", "Để sau"]
+    }).then((result) => {
+      if (result.response === 0) {
+        autoUpdater.downloadUpdate();
+      }
+    });
+  });
+
+  autoUpdater.on("update-not-available", () => {
+    console.log("No updates available.");
+  });
+
+  autoUpdater.on("update-downloaded", (info) => {
+    dialog.showMessageBox({
+      type: "info",
+      title: "Tải xong",
+      message: `Bản cập nhật ${info.version} đã tải xong. Khởi động lại ứng dụng để áp dụng?`,
+      buttons: ["Khởi động lại", "Để sau"]
     }).then((result) => {
       if (result.response === 0) {
         autoUpdater.quitAndInstall();
@@ -385,6 +414,11 @@ app.whenReady().then(() => {
   autoUpdater.on("error", (err) => {
     console.error("Auto-updater error:", err);
   });
+
+  // Tự động kiểm tra khi mở App
+  if (app.isPackaged) {
+    autoUpdater.checkForUpdates();
+  }
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

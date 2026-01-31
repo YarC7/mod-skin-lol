@@ -48,9 +48,11 @@ declare global {
       findModFile: (championId: string, skinNameEn: string, skinNum: number) => Promise<string | null>;
       listModFiles: (championId: string) => Promise<string[]>;
       startManager: () => Promise<boolean>;
+      killManager: () => Promise<boolean>;
       clearMods: () => Promise<boolean>;
       getGamePath: () => Promise<string>;
       enableModInProfile: (modName: string) => Promise<boolean>;
+      checkForUpdates: () => Promise<any>;
     };
   }
 }
@@ -111,6 +113,20 @@ selectSkinsRepoButton.addEventListener("click", async () => {
     settings.skinsRepoPath = result.path;
     await window.electronAPI.saveSettings(settings);
     updateSettingsUI();
+  }
+});
+
+const manualCheckUpdateBtn = document.getElementById("manualCheckUpdateBtn") as HTMLButtonElement;
+manualCheckUpdateBtn.addEventListener("click", async () => {
+  manualCheckUpdateBtn.disabled = true;
+  manualCheckUpdateBtn.textContent = "Checking...";
+  try {
+    await window.electronAPI.checkForUpdates();
+  } catch (e) {
+    console.error("Manual update check failed:", e);
+  } finally {
+    manualCheckUpdateBtn.disabled = false;
+    manualCheckUpdateBtn.textContent = "Check for Updates";
   }
 });
 
@@ -235,11 +251,12 @@ function renderSkins(skins: Skin[]) {
       btn.disabled = true;
 
       try {
-        // 1. Start Manager GUI
-        btn.textContent = "Starting Manager...";
-        await window.electronAPI.startManager();
+        // 1. TẮT MANAGER ĐỂ GIẢI PHÓNG FILE
+        btn.textContent = "Closing Manager...";
+        await window.electronAPI.killManager();
+        await new Promise(r => setTimeout(r, 500));
 
-        // 2. Clear old mods
+        // 2. Clear old mods (Bây giờ chắc chắn xóa được vì Manager đã tắt)
         btn.textContent = "Clearing old mods...";
         await window.electronAPI.clearMods();
 
@@ -258,33 +275,36 @@ function renderSkins(skins: Skin[]) {
         btn.textContent = "Enabling mod...";
         await window.electronAPI.enableModInProfile(modName);
 
-        // 5. MkOverlay (Truyền đường dẫn game đã detect được)
+        // 5. MkOverlay
         btn.textContent = "Patching...";
         const gamePath = await window.electronAPI.getGamePath();
 
         const overlayRes = await window.electronAPI.runModTools("mkoverlay", [
           `installed`,
           `profiles/Default`,
-          gamePath || ".", // Sử dụng gamePath nếu có, nếu không thì dùng "."
+          gamePath || ".",
           `--mods:${modName}`,
           "--ignoreConflict"
         ]);
 
         if (!overlayRes.success) {
-          // Nếu vẫn lỗi game.empty, có thể do gamePath chưa đúng
           if (overlayRes.stdout?.includes("game.empty") || overlayRes.stderr?.includes("game.empty")) {
-            throw new Error("Không tìm thấy đường dẫn Liên Minh Huyền Thoại. Vui lòng thiết lập Game Path trong CS-LOL Manager trước.");
+            throw new Error("Không tìm thấy đường dẫn Liên Minh Huyền Thoại.");
           }
           throw new Error(overlayRes.stderr || "Overlay failed");
         }
 
-        // 5. RunOverlay
-        btn.textContent = "Running...";
-        window.electronAPI.runModTools("runoverlay", [
-          `${settings.managerPath}/profiles/Default`,
-          `${settings.managerPath}/profiles/Default.config`,
+        // 6. Run Patcher (RunOverlay)
+        btn.textContent = "Running Patcher...";
+        await window.electronAPI.runModTools("runoverlay", [
+          `profiles/Default`,
+          `profiles/Default.config`,
           "--opts:configless"
         ]);
+
+        // 7. MỞ LẠI MANAGER GUI ĐỂ HIỂN THỊ DẤU TÍCH XANH
+        btn.textContent = "Opening Manager...";
+        await window.electronAPI.startManager();
 
         alert(`Successfully applied: ${skin.name_vi}`);
       } catch (err: any) {
