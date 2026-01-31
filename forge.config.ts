@@ -36,8 +36,8 @@ const config: ForgeConfig = {
         owner: 'YarC7',
         name: 'mod-skin-lol',
       },
-      prerelease: true,   // true nếu beta
-      draft: true,         // tạo draft release (rất nên)
+      prerelease: false,   // true nếu beta
+      draft: false,         // tạo draft release (rất nên)
     }),
   ],
   plugins: [
