@@ -266,13 +266,14 @@ function renderSkins(skins: Skin[]) {
       btn.disabled = true;
 
       try {
-        await window.electronAPI.log("info", `Starting application of skin: ${skin.name_en}`);
-        // 1. TẮT MANAGER ĐỂ GIẢI PHÓNG FILE
+        await window.electronAPI.log("info", `Starting simplified skin application: ${skin.name_en}`);
+
+        // 1. TẮT MANAGER (nếu đang chạy)
         btn.textContent = "Closing Manager...";
         await window.electronAPI.killManager();
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 1000));
 
-        // 2. Clear old mods (Bây giờ chắc chắn xóa được vì Manager đã tắt)
+        // 2. Clear old mods để tránh conflict
         btn.textContent = "Clearing old mods...";
         await window.electronAPI.clearMods();
 
@@ -280,21 +281,30 @@ function renderSkins(skins: Skin[]) {
         btn.textContent = "Importing...";
         const importRes = await window.electronAPI.runModTools("import", [
           modPath,
-          `${settings.managerPath}/installed/${modName}`
+          `${settings.managerPath}\\installed\\${modName}`
         ]);
 
         if (!importRes.success) {
-          throw new Error(importRes.stderr || "Import failed");
+          // Nếu import fail nhưng file đã tồn tại thì bỏ qua lỗi
+          if (!importRes.stderr?.includes("already exists")) {
+            throw new Error(importRes.stderr || "Import failed");
+          }
         }
 
-        // 4. Enable mod in profile (Ép buộc Manager phải tích chọn Mod này)
+        // 4. Enable mod in profile
         btn.textContent = "Enabling mod...";
         await window.electronAPI.enableModInProfile(modName);
 
-        // 5. MkOverlay
-        btn.textContent = "Patching...";
-        let gamePath = await window.electronAPI.getGamePath();
+        // 5. Khởi động Manager GUI
+        btn.textContent = "Starting Manager...";
+        await window.electronAPI.startManager();
+        await new Promise(r => setTimeout(r, 2000)); // Đợi Manager khởi động xong
 
+        // 6. Run Patcher tự động
+        btn.textContent = "Running Patcher...";
+        const profileInfo = await window.electronAPI.getProfilePaths();
+
+        let gamePath = await window.electronAPI.getGamePath();
         if (!gamePath) {
           await window.electronAPI.log("warn", "Game path not detected, prompting user.");
           const result = await window.electronAPI.selectFile([
@@ -302,50 +312,19 @@ function renderSkins(skins: Skin[]) {
           ]);
           if (!result.canceled && result.path) {
             gamePath = result.path;
-            // Hack: save this back to settings cache via getGamePath logic or a new saver?
-            // Since index.ts caches settings if it finds a path, let's just use it for now.
-            // But we can't save it to settings easily from renderer without a saveSettings call.
             const currentSettings = await window.electronAPI.loadSettings();
             currentSettings.gamePath = gamePath;
             await window.electronAPI.saveSettings(currentSettings);
+          } else {
+            throw new Error("Cần chọn đường dẫn game để run patcher.");
           }
         }
 
-        const profileInfo = await window.electronAPI.getProfilePaths();
-
-        await window.electronAPI.log("info", `Using Game Path: ${gamePath}`);
-
-        if (!gamePath) {
-          throw new Error("Không tìm thấy đường dẫn Liên Minh Huyền Thoại. Vui lòng chọn file LeagueClient.exe hoặc Game/League of Legends.exe.");
-        }
-
-        const overlayRes = await window.electronAPI.runModTools("mkoverlay", [
-          `installed`,
-          profileInfo ? `profiles/${profileInfo.name}` : `profiles/Default`,
-          gamePath,
-          `--mods:${modName}`,
-          "--ignoreConflict"
-        ]);
-
-        if (!overlayRes.success) {
-          await window.electronAPI.log("error", `Overlay failed: ${overlayRes.stderr || overlayRes.stdout}`);
-          if (overlayRes.stdout?.includes("game.empty") || overlayRes.stderr?.includes("game.empty")) {
-            throw new Error("Game Path không hợp lệ (game.empty). App đã cố gắng tự tìm nhưng có vẻ đường dẫn trong Manager đang bị sai.");
-          }
-          throw new Error(overlayRes.stderr || "Overlay failed");
-        }
-
-        // 6. Run Patcher (RunOverlay)
-        btn.textContent = "Running Patcher...";
         await window.electronAPI.runModTools("runoverlay", [
-          profileInfo ? `profiles/${profileInfo.name}` : `profiles/Default`,
-          profileInfo?.config || `profiles/Default.config`,
+          profileInfo ? `profiles\\${profileInfo.name}` : `profiles\\Default`,
+          profileInfo?.config || `profiles\\Default.config`,
           "--opts:configless"
         ]);
-
-        // 7. MỞ LẠI MANAGER GUI ĐỂ HIỂN THỊ DẤU TÍCH XANH
-        btn.textContent = "Opening Manager...";
-        await window.electronAPI.startManager();
 
         await window.electronAPI.log("info", `Successfully applied skin: ${skin.name_en}`);
         alert(`Successfully applied: ${skin.name_vi}`);

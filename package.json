@@ -1,7 +1,7 @@
 {
   "name": "mod-skin-lol",
   "productName": "mod-skin-lol",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "My Electron application description",
   "main": ".webpack/main",
   "private": true,
