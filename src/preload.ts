@@ -13,4 +13,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   findModFile: (championId: string, skinNameEn: string, skinNum: number) => ipcRenderer.invoke("launcher:find-mod-file", championId, skinNameEn, skinNum),
   listModFiles: (championId: string) => ipcRenderer.invoke("launcher:list-mod-files", championId),
   runModTools: (command: string, args: string[]) => ipcRenderer.invoke("launcher:run-mod-tools", command, args),
+  startManager: () => ipcRenderer.invoke("launcher:start-manager"),
+  clearMods: () => ipcRenderer.invoke("launcher:clear-mods"),
 });

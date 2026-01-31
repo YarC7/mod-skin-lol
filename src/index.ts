@@ -148,6 +148,43 @@ const registerIpcHandlers = (): void => {
     });
   });
 
+  ipcMain.handle("launcher:start-manager", async () => {
+    const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+    if (!settings.managerPath) throw new Error("Manager path not set");
+
+    const managerExe = path.join(settings.managerPath, "cs-lol-manager.exe");
+    if (!fs.existsSync(managerExe)) throw new Error("cs-lol-manager.exe not found");
+
+    const { exec } = require("child_process");
+    exec(`"${managerExe}"`, (err: any) => {
+      if (err) console.error("Failed to start manager GUI:", err);
+    });
+    return true;
+  });
+
+  ipcMain.handle("launcher:clear-mods", async () => {
+    const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+    if (!settings.managerPath) throw new Error("Manager path not set");
+
+    const installedDir = path.join(settings.managerPath, "installed");
+    if (fs.existsSync(installedDir)) {
+      const files = fs.readdirSync(installedDir);
+      for (const file of files) {
+        const fullPath = path.join(installedDir, file);
+        try {
+          if (fs.lstatSync(fullPath).isDirectory()) {
+            fs.rmSync(fullPath, { recursive: true, force: true });
+          } else {
+            fs.unlinkSync(fullPath);
+          }
+        } catch (e) {
+          console.warn(`Could not delete ${file}:`, e);
+        }
+      }
+    }
+    return true;
+  });
+
   ipcMain.handle(
     "load-champions",
     async (): Promise<any[]> => {

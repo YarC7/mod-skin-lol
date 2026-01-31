@@ -47,6 +47,8 @@ declare global {
       runModTools: (command: string, args: string[]) => Promise<{ success: boolean; stdout: string; stderr?: string }>;
       findModFile: (championId: string, skinNameEn: string, skinNum: number) => Promise<string | null>;
       listModFiles: (championId: string) => Promise<string[]>;
+      startManager: () => Promise<boolean>;
+      clearMods: () => Promise<boolean>;
     };
   }
 }
@@ -227,11 +229,20 @@ function renderSkins(skins: Skin[]) {
       }
 
       const modName = skin.name_en.replace(/[^a-zA-Z0-9]/g, "_");
-      btn.textContent = "Importing...";
+      btn.textContent = "Initializing...";
       btn.disabled = true;
 
       try {
-        // 1. Import mod
+        // 1. Start Manager GUI
+        btn.textContent = "Starting Manager...";
+        await window.electronAPI.startManager();
+
+        // 2. Clear old mods
+        btn.textContent = "Clearing old mods...";
+        await window.electronAPI.clearMods();
+
+        // 3. Import mod
+        btn.textContent = "Importing...";
         const importRes = await window.electronAPI.runModTools("import", [
           modPath,
           `${settings.managerPath}/installed/${modName}`
@@ -241,7 +252,7 @@ function renderSkins(skins: Skin[]) {
           throw new Error(importRes.stderr || "Import failed");
         }
 
-        // 2. MkOverlay
+        // 4. MkOverlay
         btn.textContent = "Patching...";
         const overlayRes = await window.electronAPI.runModTools("mkoverlay", [
           `${settings.managerPath}/installed`,
@@ -254,7 +265,7 @@ function renderSkins(skins: Skin[]) {
           throw new Error(overlayRes.stderr || "Overlay failed");
         }
 
-        // 3. RunOverlay
+        // 5. RunOverlay
         btn.textContent = "Running...";
         window.electronAPI.runModTools("runoverlay", [
           `${settings.managerPath}/profiles/Default`,
