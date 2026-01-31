@@ -20,4 +20,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
   enableModInProfile: (modName: string) => ipcRenderer.invoke("launcher:enable-mod-in-profile", modName),
   checkForUpdates: () => ipcRenderer.invoke("launcher:check-for-updates"),
   getProfilePaths: () => ipcRenderer.invoke("launcher:get-profile-paths"),
+  log: (level: "info" | "warn" | "error", message: string) => ipcRenderer.invoke("launcher:log", level, message),
 });

@@ -54,6 +54,7 @@ declare global {
       enableModInProfile: (modName: string) => Promise<boolean>;
       checkForUpdates: () => Promise<any>;
       getProfilePaths: () => Promise<{ name: string; folder: string; config: string } | null>;
+      log: (level: "info" | "warn" | "error", message: string) => Promise<void>;
     };
   }
 }
@@ -252,6 +253,7 @@ function renderSkins(skins: Skin[]) {
       btn.disabled = true;
 
       try {
+        await window.electronAPI.log("info", `Starting application of skin: ${skin.name_en}`);
         // 1. TẮT MANAGER ĐỂ GIẢI PHÓNG FILE
         btn.textContent = "Closing Manager...";
         await window.electronAPI.killManager();
@@ -281,6 +283,8 @@ function renderSkins(skins: Skin[]) {
         const gamePath = await window.electronAPI.getGamePath();
         const profileInfo = await window.electronAPI.getProfilePaths();
 
+        await window.electronAPI.log("info", `Using Game Path: ${gamePath}`);
+
         const overlayRes = await window.electronAPI.runModTools("mkoverlay", [
           `installed`,
           profileInfo ? `profiles/${profileInfo.name}` : `profiles/Default`,
@@ -290,6 +294,7 @@ function renderSkins(skins: Skin[]) {
         ]);
 
         if (!overlayRes.success) {
+          await window.electronAPI.log("error", `Overlay failed: ${overlayRes.stderr || overlayRes.stdout}`);
           if (overlayRes.stdout?.includes("game.empty") || overlayRes.stderr?.includes("game.empty")) {
             throw new Error("Không tìm thấy đường dẫn Liên Minh Huyền Thoại.");
           }
@@ -308,10 +313,13 @@ function renderSkins(skins: Skin[]) {
         btn.textContent = "Opening Manager...";
         await window.electronAPI.startManager();
 
+        await window.electronAPI.log("info", `Successfully applied skin: ${skin.name_en}`);
         alert(`Successfully applied: ${skin.name_vi}`);
       } catch (err: any) {
+        await window.electronAPI.log("error", `Error applying skin: ${err.message}`);
         alert(`Error: ${err.message}`);
-      } finally {
+      }
+      finally {
         btn.textContent = "Apply";
         btn.disabled = false;
       }
