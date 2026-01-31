@@ -128,15 +128,17 @@ const registerIpcHandlers = (): void => {
     if (fs.existsSync(configPath)) {
       try {
         const content = fs.readFileSync(configPath, "utf-8");
-        // Tìm dòng 'game: ...' trong file yaml
-        const match = content.match(/^game:\s*(.*)$/m);
+        // Tìm dòng 'game: ...' hoặc 'gamePath: ...'
+        const match = content.match(/game(?:Path)?:\s*(.*)$/m);
         if (match && match[1]) {
-          return match[1].trim().replace(/^"(.*)"$/, '$1'); // Bỏ ngoặc kép nếu có
+          let p = match[1].trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1');
+          if (p) return p;
         }
       } catch (e) {
         console.error("Error reading manager config.yaml:", e);
       }
     }
+    // Backup: Thử tìm trong các file tiềm năng khác nếu có
     return "";
   });
 
@@ -228,29 +230,31 @@ const registerIpcHandlers = (): void => {
     const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
     if (!settings.managerPath) return false;
 
-    // Đường dẫn đến file cấu hình Profile Default
-    // Lưu ý: Tùy phiên bản, nó có thể là Default.json hoặc nằm trong Default/config.yaml
-    const profilePath = path.join(settings.managerPath, "profiles", "Default.config");
+    // Thử cả .json và .config để tương thích với nhiều bản Manager
+    const profilePaths = [
+      path.join(settings.managerPath, "profiles", "Default.json"),
+      path.join(settings.managerPath, "profiles", "Default.config")
+    ];
 
-    try {
-      let config: any = {};
-      if (fs.existsSync(profilePath)) {
-        config = JSON.parse(fs.readFileSync(profilePath, "utf-8"));
+    for (const profilePath of profilePaths) {
+      try {
+        if (!fs.existsSync(profilePath)) continue;
+
+        let config: any = { mods: {} };
+        const content = fs.readFileSync(profilePath, "utf-8");
+        if (content.trim()) config = JSON.parse(content);
+
+        // Xóa sạch các mod cũ (theo flow) và chỉ bật duy nhất mod mới
+        config.mods = {};
+        config.mods[modName] = true;
+
+        fs.writeFileSync(profilePath, JSON.stringify(config, null, 2));
+        console.log(`Updated profile at ${profilePath} with mod ${modName}`);
+      } catch (e) {
+        console.warn(`Could not update profile at ${profilePath}:`, e);
       }
-
-      // Đảm bảo cấu hình có mục mods và modName được set là true (enabled)
-      if (!config.mods) config.mods = {};
-
-      // Xóa các mod cũ nếu bạn muốn chỉ duy nhất mod này được bật (theo flow clear all)
-      config.mods = {};
-      config.mods[modName] = true;
-
-      fs.writeFileSync(profilePath, JSON.stringify(config, null, 2));
-      return true;
-    } catch (e) {
-      console.error("Error updating profile config:", e);
-      return false;
     }
+    return true;
   });
 
   ipcMain.handle(

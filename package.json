@@ -1,14 +1,14 @@
 {
   "name": "mod-skin-lol",
   "productName": "mod-skin-lol",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "My Electron application description",
   "main": ".webpack/main",
   "private": true,
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make",
+    "make": "electron-forge make --arch=x64",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx ."
   },
@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
-    "electron-updater": "^6.7.3"
+    "electron-updater": "^6.7.3",
+    "mini-css-extract-plugin": "^2.10.0"
   }
 }
