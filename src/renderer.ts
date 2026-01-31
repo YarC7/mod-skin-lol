@@ -49,6 +49,7 @@ declare global {
       listModFiles: (championId: string) => Promise<string[]>;
       startManager: () => Promise<boolean>;
       clearMods: () => Promise<boolean>;
+      getGamePath: () => Promise<string>;
     };
   }
 }
@@ -252,11 +253,13 @@ function renderSkins(skins: Skin[]) {
           throw new Error(importRes.stderr || "Import failed");
         }
 
-        // 4. MkOverlay
+        // 4. MkOverlay (Sửa lỗi game.empty bằng cách truyền đường dẫn game tự động)
         btn.textContent = "Patching...";
+        const gamePath = await window.electronAPI.getGamePath();
         const overlayRes = await window.electronAPI.runModTools("mkoverlay", [
           `${settings.managerPath}/installed`,
           `${settings.managerPath}/profiles/Default`,
+          gamePath || ".", // Nếu không tìm thấy, dùng "." để tránh lỗi empty
           `--mods:${modName}`,
           "--ignoreConflict"
         ]);

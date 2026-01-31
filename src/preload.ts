@@ -15,4 +15,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
   runModTools: (command: string, args: string[]) => ipcRenderer.invoke("launcher:run-mod-tools", command, args),
   startManager: () => ipcRenderer.invoke("launcher:start-manager"),
   clearMods: () => ipcRenderer.invoke("launcher:clear-mods"),
+  getGamePath: () => ipcRenderer.invoke("launcher:get-game-path"),
 });

@@ -120,6 +120,26 @@ const registerIpcHandlers = (): void => {
       .map(f => path.join(champDir, f));
   });
 
+  ipcMain.handle("launcher:get-game-path", async () => {
+    const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+    if (!settings.managerPath) return "";
+
+    const configPath = path.join(settings.managerPath, "config.yaml");
+    if (fs.existsSync(configPath)) {
+      try {
+        const content = fs.readFileSync(configPath, "utf-8");
+        // Tìm dòng 'game: ...' trong file yaml
+        const match = content.match(/^game:\s*(.*)$/m);
+        if (match && match[1]) {
+          return match[1].trim().replace(/^"(.*)"$/, '$1'); // Bỏ ngoặc kép nếu có
+        }
+      } catch (e) {
+        console.error("Error reading manager config.yaml:", e);
+      }
+    }
+    return "";
+  });
+
   ipcMain.handle("launcher:run-mod-tools", async (_event, command: string, args: string[]) => {
     const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
     if (!settings.managerPath) throw new Error("Manager path not set");
