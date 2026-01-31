@@ -141,10 +141,14 @@ const registerIpcHandlers = (): void => {
       if (!fs.existsSync(SETTINGS_FILE)) return "";
       const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
 
-      // 1. Nếu đã có trong cache settings, ưu tiên dùng luôn
-      if (settings.gamePath) {
+      // 1. Nếu đã có trong cache settings, ưu tiên dùng luôn (nếu tồn tại trên ổ đĩa)
+      if (settings.gamePath && fs.existsSync(settings.gamePath)) {
         log.info("System: Using cached Game Path:", settings.gamePath);
         return settings.gamePath;
+      }
+      if (settings.gamePath) {
+        log.warn("System: Cached Game Path no longer exists, re-detecting...");
+        delete settings.gamePath;
       }
 
       if (!settings.managerPath) return "";

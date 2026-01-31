@@ -62,7 +62,8 @@ declare global {
 let settings = {
   managerPath: "",
   skinsRepoPath: "",
-  skinMappings: {} as any
+  skinMappings: {} as any,
+  gamePath: ""
 };
 
 const settingsToggle = document.getElementById("settingsToggle") as HTMLButtonElement;
@@ -71,6 +72,8 @@ const selectManagerButton = document.getElementById("selectManagerButton") as HT
 const selectSkinsRepoButton = document.getElementById("selectSkinsRepoButton") as HTMLButtonElement;
 const managerPathDisplay = document.getElementById("managerPathDisplay") as HTMLSpanElement;
 const skinsRepoPathDisplay = document.getElementById("skinsRepoPathDisplay") as HTMLSpanElement;
+const gamePathDisplay = document.getElementById("gamePathDisplay") as HTMLSpanElement;
+const selectGameButton = document.getElementById("selectGameButton") as HTMLButtonElement;
 
 async function initSettings() {
   let retries = 5;
@@ -91,6 +94,7 @@ async function initSettings() {
 function updateSettingsUI() {
   managerPathDisplay.textContent = settings.managerPath || "Not set";
   skinsRepoPathDisplay.textContent = settings.skinsRepoPath || "Not set";
+  gamePathDisplay.textContent = settings.gamePath || "Not set (Auto)";
 }
 
 settingsToggle.addEventListener("click", () => {
@@ -107,7 +111,16 @@ selectManagerButton.addEventListener("click", async () => {
   }
 });
 
-// selectGameButton and its listener removed
+selectGameButton.addEventListener("click", async () => {
+  const result = await window.electronAPI.selectFile([
+    { name: "League of Legends Executable", extensions: ["exe"] }
+  ]);
+  if (!result.canceled) {
+    settings.gamePath = result.path;
+    await window.electronAPI.saveSettings(settings);
+    updateSettingsUI();
+  }
+});
 
 selectSkinsRepoButton.addEventListener("click", async () => {
   const result = await window.electronAPI.selectFolder();
