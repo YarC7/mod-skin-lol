@@ -50,6 +50,7 @@ declare global {
       startManager: () => Promise<boolean>;
       clearMods: () => Promise<boolean>;
       getGamePath: () => Promise<string>;
+      enableModInProfile: (modName: string) => Promise<boolean>;
     };
   }
 }
@@ -253,13 +254,16 @@ function renderSkins(skins: Skin[]) {
           throw new Error(importRes.stderr || "Import failed");
         }
 
-        // 4. MkOverlay (Sửa lỗi game.empty bằng cách truyền đường dẫn game tự động)
+        // 4. Enable mod in profile (Ép buộc Manager phải tích chọn Mod này)
+        btn.textContent = "Enabling mod...";
+        await window.electronAPI.enableModInProfile(modName);
+
+        // 5. MkOverlay (Sửa lỗi game.empty bằng cách truyền "" để nó tự detect từ config.yaml)
         btn.textContent = "Patching...";
-        const gamePath = await window.electronAPI.getGamePath();
         const overlayRes = await window.electronAPI.runModTools("mkoverlay", [
-          `${settings.managerPath}/installed`,
-          `${settings.managerPath}/profiles/Default`,
-          gamePath || ".", // Nếu không tìm thấy, dùng "." để tránh lỗi empty
+          `installed`,
+          `profiles/Default`,
+          "", // Truyền chuỗi rỗng để nó tự lấy trong config.yaml (vì CWD đã đúng)
           `--mods:${modName}`,
           "--ignoreConflict"
         ]);

@@ -148,7 +148,9 @@ const registerIpcHandlers = (): void => {
     if (!fs.existsSync(modToolsPath)) throw new Error("mod-tools.exe not found");
 
     return new Promise((resolve, reject) => {
-      const child = spawn(modToolsPath, [command, ...args]);
+      const child = spawn(modToolsPath, [command, ...args], {
+        cwd: settings.managerPath
+      });
       let stdout = "";
       let stderr = "";
 
@@ -177,10 +179,26 @@ const registerIpcHandlers = (): void => {
     if (!fs.existsSync(managerExe)) throw new Error("cslol-manager.exe not found");
 
     const { exec } = require("child_process");
-    exec(`"${managerExe}"`, (err: any) => {
-      if (err) console.error("Failed to start manager GUI:", err);
+
+    // Kiểm tra xem tiến trình có đang chạy không
+    return new Promise((resolve) => {
+      exec('tasklist', (err: any, stdout: string) => {
+        // Kiểm tra đúng tên file exe (có thể là cs-lol-manager.exe hoặc cslol-manager.exe)
+        // Dựa vào code của bạn đang để là cslol-manager.exe
+        const isRunning = stdout.toLowerCase().includes("cslol-manager.exe");
+
+        if (isRunning) {
+          console.log("CS-LOL Manager is already running.");
+          resolve(true);
+        } else {
+          // Chỉ mở nếu chưa chạy
+          exec(`"${managerExe}"`, (startErr: any) => {
+            if (startErr) console.error("Failed to start manager GUI:", startErr);
+            resolve(true);
+          });
+        }
+      });
     });
-    return true;
   });
 
   ipcMain.handle("launcher:clear-mods", async () => {
@@ -204,6 +222,35 @@ const registerIpcHandlers = (): void => {
       }
     }
     return true;
+  });
+
+  ipcMain.handle("launcher:enable-mod-in-profile", async (_event, modName: string) => {
+    const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+    if (!settings.managerPath) return false;
+
+    // Đường dẫn đến file cấu hình Profile Default
+    // Lưu ý: Tùy phiên bản, nó có thể là Default.json hoặc nằm trong Default/config.yaml
+    const profilePath = path.join(settings.managerPath, "profiles", "Default.config");
+
+    try {
+      let config: any = {};
+      if (fs.existsSync(profilePath)) {
+        config = JSON.parse(fs.readFileSync(profilePath, "utf-8"));
+      }
+
+      // Đảm bảo cấu hình có mục mods và modName được set là true (enabled)
+      if (!config.mods) config.mods = {};
+
+      // Xóa các mod cũ nếu bạn muốn chỉ duy nhất mod này được bật (theo flow clear all)
+      config.mods = {};
+      config.mods[modName] = true;
+
+      fs.writeFileSync(profilePath, JSON.stringify(config, null, 2));
+      return true;
+    } catch (e) {
+      console.error("Error updating profile config:", e);
+      return false;
+    }
   });
 
   ipcMain.handle(

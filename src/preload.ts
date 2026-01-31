@@ -16,4 +16,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
   startManager: () => ipcRenderer.invoke("launcher:start-manager"),
   clearMods: () => ipcRenderer.invoke("launcher:clear-mods"),
   getGamePath: () => ipcRenderer.invoke("launcher:get-game-path"),
+  enableModInProfile: (modName: string) => ipcRenderer.invoke("launcher:enable-mod-in-profile", modName),
 });
