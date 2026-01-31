@@ -140,7 +140,10 @@ const registerIpcHandlers = (): void => {
       const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
 
       // 1. Nếu đã có trong cache settings, ưu tiên dùng luôn
-      if (settings.gamePath) return settings.gamePath;
+      if (settings.gamePath) {
+        log.info("System: Using cached Game Path:", settings.gamePath);
+        return settings.gamePath;
+      }
 
       if (!settings.managerPath) return "";
 
@@ -149,11 +152,13 @@ const registerIpcHandlers = (): void => {
       // 2. Thử tìm trong config.ini (Ưu tiên vì user đang dùng file này)
       const configIniPath = path.join(settings.managerPath, "config.ini");
       if (fs.existsSync(configIniPath)) {
+        log.info("System: Reading config.ini at:", configIniPath);
         const content = fs.readFileSync(configIniPath, "utf-8");
-        // Regex bắt leaguePath=... xử lý cả khoảng trắng và xuống dòng Windows (\r)
-        const match = content.match(/^leaguePath\s*=\s*(.*)$/mi);
+        // Regex thoáng hơn, không bắt đầu ở đầu dòng ^ để tránh vấn đề với BOM hoặc byte lạ
+        const match = content.match(/leaguePath\s*=\s*([^\r\n]+)/i);
         if (match && match[1]) {
-          detectedPath = match[1].trim().replace(/\r/g, "");
+          detectedPath = match[1].trim();
+          log.info("System: Detected leaguePath from INI:", detectedPath);
         }
       }
 
@@ -171,10 +176,13 @@ const registerIpcHandlers = (): void => {
       if (detectedPath && detectedPath !== '""' && detectedPath !== "''") {
         settings.gamePath = detectedPath;
         fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+        log.info("System: Saved Game Path to settings cache.");
         return detectedPath;
+      } else {
+        log.warn("System: Could not detect game path from any config file.");
       }
     } catch (e) {
-      console.error("Error detecting game path:", e);
+      log.error("System: Error detecting game path:", e);
     }
     return "";
   });

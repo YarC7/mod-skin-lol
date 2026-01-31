@@ -43,7 +43,7 @@ declare global {
       selectFolder: () => Promise<{ canceled: boolean; path: string }>;
       selectFile: (filters: any) => Promise<{ canceled: boolean; path: string }>;
       saveSettings: (settings: any) => Promise<boolean>;
-      loadSettings: () => Promise<{ managerPath: string; skinsRepoPath: string; skinMappings?: any }>;
+      loadSettings: () => Promise<{ managerPath: string; skinsRepoPath: string; skinMappings?: any; gamePath?: string }>;
       runModTools: (command: string, args: string[]) => Promise<{ success: boolean; stdout: string; stderr?: string }>;
       findModFile: (championId: string, skinNameEn: string, skinNum: number) => Promise<string | null>;
       listModFiles: (championId: string) => Promise<string[]>;
@@ -280,15 +280,36 @@ function renderSkins(skins: Skin[]) {
 
         // 5. MkOverlay
         btn.textContent = "Patching...";
-        const gamePath = await window.electronAPI.getGamePath();
+        let gamePath = await window.electronAPI.getGamePath();
+
+        if (!gamePath) {
+          await window.electronAPI.log("warn", "Game path not detected, prompting user.");
+          const result = await window.electronAPI.selectFile([
+            { name: "League of Legends Executable", extensions: ["exe"] }
+          ]);
+          if (!result.canceled && result.path) {
+            gamePath = result.path;
+            // Hack: save this back to settings cache via getGamePath logic or a new saver?
+            // Since index.ts caches settings if it finds a path, let's just use it for now.
+            // But we can't save it to settings easily from renderer without a saveSettings call.
+            const currentSettings = await window.electronAPI.loadSettings();
+            currentSettings.gamePath = gamePath;
+            await window.electronAPI.saveSettings(currentSettings);
+          }
+        }
+
         const profileInfo = await window.electronAPI.getProfilePaths();
 
         await window.electronAPI.log("info", `Using Game Path: ${gamePath}`);
 
+        if (!gamePath) {
+          throw new Error("Không tìm thấy đường dẫn Liên Minh Huyền Thoại. Vui lòng chọn file LeagueClient.exe hoặc Game/League of Legends.exe.");
+        }
+
         const overlayRes = await window.electronAPI.runModTools("mkoverlay", [
           `installed`,
           profileInfo ? `profiles/${profileInfo.name}` : `profiles/Default`,
-          gamePath || ".",
+          gamePath,
           `--mods:${modName}`,
           "--ignoreConflict"
         ]);
