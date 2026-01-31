@@ -15,6 +15,12 @@ if (require("electron-squirrel-startup")) {
 
 const SETTINGS_FILE = path.join(app.getPath("userData"), "settings.json");
 
+const getResourcePath = (filename: string) => {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, filename)
+    : path.join(app.getAppPath(), filename);
+};
+
 type Settings = {
   managerPath: string;
   skinsRepoPath: string;
@@ -146,7 +152,11 @@ const registerIpcHandlers = (): void => {
     "load-champions",
     async (): Promise<any[]> => {
       try {
-        const filePath = path.join(app.getAppPath(), "champion_skins_full.json");
+        const filePath = getResourcePath("champion_skins_full.json");
+        if (!fs.existsSync(filePath)) {
+          console.error("Champion data file NOT FOUND at:", filePath);
+          return [];
+        }
         const data = fs.readFileSync(filePath, "utf-8");
         const allData = JSON.parse(data);
         return allData.map((item: any) => ({
@@ -155,7 +165,7 @@ const registerIpcHandlers = (): void => {
           name_vi: item.name_vi
         }));
       } catch (error) {
-        console.error("Error loading champions:", error);
+        console.error("Error loading champions from " + getResourcePath("champion_skins_full.json") + ":", error);
         return [];
       }
     },
@@ -165,7 +175,7 @@ const registerIpcHandlers = (): void => {
     "load-skins",
     async (_event, championId: string): Promise<any> => {
       try {
-        const filePath = path.join(app.getAppPath(), "champion_skins_full.json");
+        const filePath = getResourcePath("champion_skins_full.json");
         const data = fs.readFileSync(filePath, "utf-8");
         const allSkins = JSON.parse(data);
         return allSkins.find((item: any) => item.id === championId) || null;

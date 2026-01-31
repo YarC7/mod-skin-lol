@@ -18,6 +18,10 @@ import { rendererConfig } from './webpack.renderer.config';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    extraResource: [
+      "./champions.json",
+      "./champion_skins_full.json"
+    ]
   },
   rebuildConfig: {},
   makers: [
