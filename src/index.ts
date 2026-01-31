@@ -126,16 +126,26 @@ const registerIpcHandlers = (): void => {
       const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
       if (!settings.managerPath) return "";
 
-      const configPath = path.join(settings.managerPath, "config.yaml");
-      if (fs.existsSync(configPath)) {
-        const content = fs.readFileSync(configPath, "utf-8");
-        const match = content.match(/game(?:Path)?:\s*["']?(.*?)["']?$/m);
+      // 1. Thử tìm trong config.yaml
+      const configYamlPath = path.join(settings.managerPath, "config.yaml");
+      if (fs.existsSync(configYamlPath)) {
+        const content = fs.readFileSync(configYamlPath, "utf-8");
+        const match = content.match(/game(?:Path|_path|path)?\s*:\s*["']?(.*?)["']?\s*$/mi);
         if (match && match[1]) {
-          let p = match[1].trim();
-          if (p) {
-            console.log("Detected game path from config.yaml:", p);
-            return p;
-          }
+          const p = match[1].trim();
+          if (p && p !== '""' && p !== "''") return p;
+        }
+      }
+
+      // 2. Thử tìm trong config.ini (Dành cho một số phiên bản Manager khác)
+      const configIniPath = path.join(settings.managerPath, "config.ini");
+      if (fs.existsSync(configIniPath)) {
+        const content = fs.readFileSync(configIniPath, "utf-8");
+        // Hỗ trợ thêm leaguePath từ file config.ini của user
+        const match = content.match(/(?:game|league)(?:Path|_path|path)?\s*[:=]\s*["']?(.*?)["']?\s*$/mi);
+        if (match && match[1]) {
+          const p = match[1].trim();
+          if (p && p !== '""' && p !== "''") return p;
         }
       }
     } catch (e) {
