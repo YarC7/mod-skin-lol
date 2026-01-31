@@ -258,17 +258,23 @@ function renderSkins(skins: Skin[]) {
         btn.textContent = "Enabling mod...";
         await window.electronAPI.enableModInProfile(modName);
 
-        // 5. MkOverlay (Sửa lỗi game.empty bằng cách truyền "" để nó tự detect từ config.yaml)
+        // 5. MkOverlay (Truyền đường dẫn game đã detect được)
         btn.textContent = "Patching...";
+        const gamePath = await window.electronAPI.getGamePath();
+
         const overlayRes = await window.electronAPI.runModTools("mkoverlay", [
           `installed`,
           `profiles/Default`,
-          "", // Truyền chuỗi rỗng để nó tự lấy trong config.yaml (vì CWD đã đúng)
+          gamePath || ".", // Sử dụng gamePath nếu có, nếu không thì dùng "."
           `--mods:${modName}`,
           "--ignoreConflict"
         ]);
 
         if (!overlayRes.success) {
+          // Nếu vẫn lỗi game.empty, có thể do gamePath chưa đúng
+          if (overlayRes.stdout?.includes("game.empty") || overlayRes.stderr?.includes("game.empty")) {
+            throw new Error("Không tìm thấy đường dẫn Liên Minh Huyền Thoại. Vui lòng thiết lập Game Path trong CS-LOL Manager trước.");
+          }
           throw new Error(overlayRes.stderr || "Overlay failed");
         }
 
