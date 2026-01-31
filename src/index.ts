@@ -201,16 +201,14 @@ const registerIpcHandlers = (): void => {
       const toolsExe = path.join(settings.managerPath, "cslol-tools", "mod-tools.exe");
       if (!fs.existsSync(toolsExe)) throw new Error("mod-tools.exe not found");
 
-      // Chuẩn hóa đường dẫn: CHỈ chuyển / thành \ cho Windows, KHÔNG tự bọc ngoặc kép ở đây
-      // Node.js spawn sẽ tự bọc nếu dùng shell: true hoặc xử lý nội bộ.
-      const processedArgs = args.map(arg => arg.replace(/\//g, "\\"));
+      log.info(`System: Spawning mod-tools ${command} with args:`, args);
 
-      log.info(`System: Spawning mod-tools ${command} with args:`, processedArgs);
-
+      // Sử dụng shell: true để giúp xử lý khoảng trắng trong đường dẫn tốt hơn trên Windows
       return new Promise((resolve) => {
-        const child = spawn(toolsExe, [command, ...processedArgs], {
+        const child = spawn(toolsExe, [command, ...args], {
           cwd: settings.managerPath,
-          shell: false // Sử dụng false để Node.js tự động xử lý khoảng trắng trong argument (không bị tách bởi cmd.exe)
+          shell: true,
+          windowsHide: true
         });
 
         let stdout = "";
