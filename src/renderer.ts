@@ -307,11 +307,11 @@ function renderSkins(skins: Skin[]) {
         }
 
         const overlayRes = await window.electronAPI.runModTools("mkoverlay", [
+          `--mods:${modName}`,
+          "--ignoreConflict",
           `installed`,
           profileInfo ? `profiles/${profileInfo.name}` : `profiles/Default`,
-          gamePath,
-          `--mods:${modName}`,
-          "--ignoreConflict"
+          gamePath
         ]);
 
         if (!overlayRes.success) {
