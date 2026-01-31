@@ -159,7 +159,7 @@ const registerIpcHandlers = (): void => {
         // Regex thoáng hơn, không bắt đầu ở đầu dòng ^ để tránh vấn đề với BOM hoặc byte lạ
         const match = content.match(/leaguePath\s*=\s*([^\r\n]+)/i);
         if (match && match[1]) {
-          detectedPath = match[1].trim();
+          detectedPath = match[1].trim().replace(/^["'](.*)["']$/, '$1');
           log.info("System: Detected leaguePath from INI:", detectedPath);
         }
       }
@@ -206,7 +206,7 @@ const registerIpcHandlers = (): void => {
       return new Promise((resolve) => {
         const child = spawn(toolsExe, [command, ...processedArgs], {
           cwd: settings.managerPath,
-          shell: true // Quan trọng trên Windows để xử lý khoảng trắng trong tên file
+          shell: false // Sử dụng false để Node.js tự động xử lý khoảng trắng trong argument (không bị tách bởi cmd.exe)
         });
 
         let stdout = "";
@@ -477,7 +477,12 @@ app.whenReady().then(() => {
 
   ipcMain.handle("launcher:check-for-updates", async () => {
     if (app.isPackaged) {
-      return autoUpdater.checkForUpdates();
+      try {
+        return await autoUpdater.checkForUpdates();
+      } catch (err: any) {
+        log.error("Update System: Check failed:", err.message);
+        return { success: false, message: err.message };
+      }
     }
     return { success: false, message: "Only available in packaged app" };
   });
