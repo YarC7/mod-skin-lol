@@ -1,4 +1,7 @@
 import type { ForgeConfig } from '@electron-forge/shared-types';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerDeb } from '@electron-forge/maker-deb';
