@@ -317,7 +317,7 @@ function renderSkins(skins: Skin[]) {
         if (!overlayRes.success) {
           await window.electronAPI.log("error", `Overlay failed: ${overlayRes.stderr || overlayRes.stdout}`);
           if (overlayRes.stdout?.includes("game.empty") || overlayRes.stderr?.includes("game.empty")) {
-            throw new Error("Không tìm thấy đường dẫn Liên Minh Huyền Thoại.");
+            throw new Error("Game Path không hợp lệ (game.empty). App đã cố gắng tự tìm nhưng có vẻ đường dẫn trong Manager đang bị sai.");
           }
           throw new Error(overlayRes.stderr || "Overlay failed");
         }
