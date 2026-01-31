@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { autoUpdater } from "electron-updater";
 import { spawn } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
@@ -152,8 +153,8 @@ const registerIpcHandlers = (): void => {
     const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
     if (!settings.managerPath) throw new Error("Manager path not set");
 
-    const managerExe = path.join(settings.managerPath, "cs-lol-manager.exe");
-    if (!fs.existsSync(managerExe)) throw new Error("cs-lol-manager.exe not found");
+    const managerExe = path.join(settings.managerPath, "cslol-manager.exe");
+    if (!fs.existsSync(managerExe)) throw new Error("cslol-manager.exe not found");
 
     const { exec } = require("child_process");
     exec(`"${managerExe}"`, (err: any) => {
@@ -267,6 +268,32 @@ const createWindow = (): void => {
 app.whenReady().then(() => {
   registerIpcHandlers();
   createWindow();
+
+  // Basic Auto-update configuration
+  if (app.isPackaged) {
+    autoUpdater.checkForUpdatesAndNotify();
+  }
+
+  autoUpdater.on("update-available", () => {
+    console.log("Update available.");
+  });
+
+  autoUpdater.on("update-downloaded", () => {
+    dialog.showMessageBox({
+      type: "info",
+      title: "Update Available",
+      message: "A new version has been downloaded. Restart the application to apply the updates?",
+      buttons: ["Restart", "Later"]
+    }).then((result) => {
+      if (result.response === 0) {
+        autoUpdater.quitAndInstall();
+      }
+    });
+  });
+
+  autoUpdater.on("error", (err) => {
+    console.error("Auto-updater error:", err);
+  });
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
