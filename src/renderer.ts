@@ -12,6 +12,7 @@ interface Champion {
   id: string;
   name_en: string;
   name_vi: string;
+  icon: string;
 }
 
 let champions: Champion[] = [];
@@ -212,7 +213,7 @@ function renderChampions(champs: Champion[]) {
     const div = document.createElement("div");
     div.className = "champion-item";
     div.innerHTML = `
-      <img src="https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/${champ.id}.png" 
+      <img src="${champ.icon}" 
            onerror="this.src='https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/Aatrox.png'; this.style.filter='grayscale(1)';" 
            alt="${champ.name_vi}" />
       <span>${champ.name_vi}</span>

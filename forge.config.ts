@@ -20,7 +20,6 @@ const config: ForgeConfig = {
     asar: true,
     icon: './assets/icon.ico',
     extraResource: [
-      "./champions.json",
       "./champion_skins_full.json"
     ]
   },
