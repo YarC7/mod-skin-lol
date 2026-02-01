@@ -21,4 +21,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
   checkForUpdates: () => ipcRenderer.invoke("launcher:check-for-updates"),
   getProfilePaths: () => ipcRenderer.invoke("launcher:get-profile-paths"),
   log: (level: "info" | "warn" | "error", message: string) => ipcRenderer.invoke("launcher:log", level, message),
+  getLogPath: () => ipcRenderer.invoke("launcher:get-log-path"),
 });

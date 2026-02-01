@@ -55,6 +55,7 @@ declare global {
       checkForUpdates: () => Promise<any>;
       getProfilePaths: () => Promise<{ name: string; folder: string; config: string } | null>;
       log: (level: "info" | "warn" | "error", message: string) => Promise<void>;
+      getLogPath: () => Promise<string>;
     };
   }
 }
@@ -74,6 +75,51 @@ const managerPathDisplay = document.getElementById("managerPathDisplay") as HTML
 const skinsRepoPathDisplay = document.getElementById("skinsRepoPathDisplay") as HTMLSpanElement;
 const gamePathDisplay = document.getElementById("gamePathDisplay") as HTMLSpanElement;
 const selectGameButton = document.getElementById("selectGameButton") as HTMLButtonElement;
+
+// Notification System
+type NotificationType = "success" | "error" | "warning" | "info";
+
+function showNotification(title: string, message: string, type: NotificationType = "info", duration: number = 5000) {
+  const container = document.getElementById("notificationContainer");
+  if (!container) return;
+
+  const notification = document.createElement("div");
+  notification.className = `notification ${type}`;
+
+  const icons = {
+    success: "✓",
+    error: "✕",
+    warning: "⚠",
+    info: "ℹ"
+  };
+
+  notification.innerHTML = `
+    <div class="notification-icon">${icons[type]}</div>
+    <div class="notification-content">
+      <div class="notification-title">${title}</div>
+      <div class="notification-message">${message}</div>
+    </div>
+    <button class="notification-close">×</button>
+  `;
+
+  const closeBtn = notification.querySelector(".notification-close") as HTMLButtonElement;
+  closeBtn.addEventListener("click", () => {
+    notification.classList.add("fade-out");
+    setTimeout(() => notification.remove(), 300);
+  });
+
+  container.appendChild(notification);
+
+  // Auto dismiss
+  if (duration > 0) {
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.classList.add("fade-out");
+        setTimeout(() => notification.remove(), 300);
+      }
+    }, duration);
+  }
+}
 
 async function initSettings() {
   let retries = 5;
@@ -218,7 +264,7 @@ function renderSkins(skins: Skin[]) {
       e.stopPropagation();
 
       if (!settings.managerPath) {
-        alert("Please set CS-LOL Manager path in Settings first!");
+        showNotification("Settings Required", "Please set CS-LOL Manager path in Settings first!", "warning");
         settingsPanel.style.display = "block";
         return;
       }
@@ -265,20 +311,27 @@ function renderSkins(skins: Skin[]) {
       btn.textContent = "Initializing...";
       btn.disabled = true;
 
+      const startTime = Date.now();
+
       try {
-        await window.electronAPI.log("info", `Starting simplified skin application: ${skin.name_en}`);
+        await window.electronAPI.log("info", `[START] Applying skin: ${skin.name_en}`);
 
         // 1. TẮT MANAGER (nếu đang chạy)
         btn.textContent = "Closing Manager...";
+        const step1Start = Date.now();
         await window.electronAPI.killManager();
         await new Promise(r => setTimeout(r, 1000));
+        await window.electronAPI.log("info", `[STEP 1] Kill Manager completed in ${Date.now() - step1Start}ms`);
 
         // 2. Clear old mods để tránh conflict
         btn.textContent = "Clearing old mods...";
+        const step2Start = Date.now();
         await window.electronAPI.clearMods();
+        await window.electronAPI.log("info", `[STEP 2] Clear mods completed in ${Date.now() - step2Start}ms`);
 
         // 3. Import mod
         btn.textContent = "Importing...";
+        const step3Start = Date.now();
         const importRes = await window.electronAPI.runModTools("import", [
           modPath,
           `${settings.managerPath}\\installed\\${modName}`
@@ -290,23 +343,36 @@ function renderSkins(skins: Skin[]) {
             throw new Error(importRes.stderr || "Import failed");
           }
         }
+        await window.electronAPI.log("info", `[STEP 3] Import completed in ${Date.now() - step3Start}ms`);
 
         // 4. Enable mod in profile
         btn.textContent = "Enabling mod...";
+        const step4Start = Date.now();
         await window.electronAPI.enableModInProfile(modName);
+        await window.electronAPI.log("info", `[STEP 4] Enable mod in profile completed in ${Date.now() - step4Start}ms`);
 
         // 5. Khởi động Manager GUI
         btn.textContent = "Starting Manager...";
+        const step5Start = Date.now();
         await window.electronAPI.startManager();
         await new Promise(r => setTimeout(r, 2000)); // Đợi Manager khởi động xong
+        await window.electronAPI.log("info", `[STEP 5] Start manager completed in ${Date.now() - step5Start}ms`);
 
-        await window.electronAPI.log("info", `Successfully applied skin and started manager: ${skin.name_en}`);
-        alert(`Successfully applied: ${skin.name_vi}. Please make sure 'Run' is enabled in CS-LOL Manager!`);
+        const totalTime = Date.now() - startTime;
+        await window.electronAPI.log("info", `[COMPLETE] Total time: ${totalTime}ms for skin: ${skin.name_en}`);
+
+        showNotification(
+          "Skin Applied Successfully!",
+          `${skin.name_vi} has been applied. Make sure 'Run' is enabled in CS-LOL Manager!`,
+          "success",
+          6000
+        );
 
 
       } catch (err: any) {
-        await window.electronAPI.log("error", `Error applying skin: ${err.message}`);
-        alert(`Error: ${err.message}`);
+        const totalTime = Date.now() - startTime;
+        await window.electronAPI.log("error", `[FAILED] Error after ${totalTime}ms: ${err.message}`);
+        showNotification("Error", err.message, "error", 8000);
       }
       finally {
         btn.textContent = "Apply";
