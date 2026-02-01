@@ -355,7 +355,7 @@ function renderSkins(skins: Skin[]) {
         btn.textContent = "Starting Manager...";
         const step5Start = Date.now();
         await window.electronAPI.startManager();
-        await new Promise(r => setTimeout(r, 2000)); // Đợi Manager khởi động xong
+        await new Promise(r => setTimeout(r, 500)); // Đợi một chút để manager khởi động
         await window.electronAPI.log("info", `[STEP 5] Start manager completed in ${Date.now() - step5Start}ms`);
 
         const totalTime = Date.now() - startTime;

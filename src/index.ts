@@ -221,27 +221,42 @@ const registerIpcHandlers = (): void => {
   });
 
   ipcMain.handle("launcher:start-manager", async () => {
-    const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
-    if (!settings.managerPath) throw new Error("Manager path not set");
+    try {
+      const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+      if (!settings.managerPath) throw new Error("Manager path not set");
 
-    const managerExe = path.join(settings.managerPath, "cslol-manager.exe");
-    if (!fs.existsSync(managerExe)) throw new Error("cslol-manager.exe not found");
+      const managerExe = path.join(settings.managerPath, "cslol-manager.exe");
+      if (!fs.existsSync(managerExe)) throw new Error("cslol-manager.exe not found");
 
-    const { exec } = require("child_process");
+      const { exec } = require("child_process");
 
-    return new Promise((resolve) => {
-      exec('tasklist', (err: any, stdout: string) => {
-        const isRunning = stdout.toLowerCase().includes("cslol-manager.exe");
+      return new Promise((resolve) => {
+        exec('tasklist', (err: any, stdout: string) => {
+          const isRunning = stdout.toLowerCase().includes("cslol-manager.exe");
 
-        if (isRunning) {
-          resolve(true);
-        } else {
-          exec(`"${managerExe}"`, (startErr: any) => {
+          if (isRunning) {
+            log.info("CS-LOL Manager already running");
             resolve(true);
-          });
-        }
+          } else {
+            // Dùng spawn detached để không đợi GUI app kết thúc
+            const child = spawn(managerExe, [], {
+              detached: true,
+              stdio: 'ignore',
+              cwd: settings.managerPath,
+              windowsHide: false
+            });
+
+            child.unref(); // Cho phép parent process thoát mà không đợi child
+
+            log.info("CS-LOL Manager started successfully");
+            resolve(true);
+          }
+        });
       });
-    });
+    } catch (e: any) {
+      log.error("Error starting manager:", e);
+      throw e;
+    }
   });
 
   ipcMain.handle("launcher:clear-mods", async () => {
