@@ -300,34 +300,10 @@ function renderSkins(skins: Skin[]) {
         await window.electronAPI.startManager();
         await new Promise(r => setTimeout(r, 2000)); // Đợi Manager khởi động xong
 
-        // 6. Run Patcher tự động
-        btn.textContent = "Running Patcher...";
-        const profileInfo = await window.electronAPI.getProfilePaths();
+        await window.electronAPI.log("info", `Successfully applied skin and started manager: ${skin.name_en}`);
+        alert(`Successfully applied: ${skin.name_vi}. Please make sure 'Run' is enabled in CS-LOL Manager!`);
 
-        let gamePath = await window.electronAPI.getGamePath();
-        if (!gamePath) {
-          await window.electronAPI.log("warn", "Game path not detected, prompting user.");
-          const result = await window.electronAPI.selectFile([
-            { name: "League of Legends Executable", extensions: ["exe"] }
-          ]);
-          if (!result.canceled && result.path) {
-            gamePath = result.path;
-            const currentSettings = await window.electronAPI.loadSettings();
-            currentSettings.gamePath = gamePath;
-            await window.electronAPI.saveSettings(currentSettings);
-          } else {
-            throw new Error("Cần chọn đường dẫn game để run patcher.");
-          }
-        }
 
-        await window.electronAPI.runModTools("runoverlay", [
-          profileInfo ? `profiles\\${profileInfo.name}` : `profiles\\Default`,
-          profileInfo?.config || `profiles\\Default.config`,
-          "--opts:configless"
-        ]);
-
-        await window.electronAPI.log("info", `Successfully applied skin: ${skin.name_en}`);
-        alert(`Successfully applied: ${skin.name_vi}`);
       } catch (err: any) {
         await window.electronAPI.log("error", `Error applying skin: ${err.message}`);
         alert(`Error: ${err.message}`);
