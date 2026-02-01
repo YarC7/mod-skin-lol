@@ -30,6 +30,7 @@ const config: ForgeConfig = {
       name: 'ModSkinLoL',
       setupIcon: './assets/icon.ico', // icon installer
       iconUrl: 'https://raw.githubusercontent.com/YarC7/mod-skin-lol/main/assets/icon.ico',
+      noMsi: true, // Skip MSI generation (faster build)
     }),
   ],
   publishers: [
