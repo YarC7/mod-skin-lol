@@ -209,7 +209,7 @@ async function loadChampions() {
 // Helper function to clean champion ID for Data Dragon URLs
 function cleanChampionId(id: string): string {
   // Remove special characters (apostrophes, periods, spaces) and convert to lowercase
-  return id.replace(/['.\s&]/g, '').toLowerCase();
+  return id.replace(/['.\s&]/g, '');
 }
 
 function renderChampions(champs: Champion[]) {
