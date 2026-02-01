@@ -12,7 +12,6 @@ interface Champion {
   id: string;
   name_en: string;
   name_vi: string;
-  icon: string;
 }
 
 let champions: Champion[] = [];
@@ -207,13 +206,21 @@ async function loadChampions() {
   }
 }
 
+// Helper function to clean champion ID for Data Dragon URLs
+function cleanChampionId(id: string): string {
+  // Remove special characters (apostrophes, periods, spaces) and convert to lowercase
+  return id.replace(/['.\s&]/g, '').toLowerCase();
+}
+
 function renderChampions(champs: Champion[]) {
   championList.innerHTML = "";
   champs.forEach((champ) => {
     const div = document.createElement("div");
     div.className = "champion-item";
+    // Clean the champion ID for the image URL
+    const cleanId = cleanChampionId(champ.id);
     div.innerHTML = `
-      <img src="${champ.icon}" 
+      <img src="https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/${cleanId}.png" 
            onerror="this.src='https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/Aatrox.png'; this.style.filter='grayscale(1)';" 
            alt="${champ.name_vi}" />
       <span>${champ.name_vi}</span>
