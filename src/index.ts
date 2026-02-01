@@ -90,10 +90,35 @@ const registerIpcHandlers = (): void => {
     const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
     if (!settings.skinsRepoPath) return null;
 
-    const champDir = path.join(settings.skinsRepoPath, "skins", championId);
-    if (!fs.existsSync(champDir)) return null;
+    // Helper function to convert "XinZhao" to "Xin Zhao"
+    const addSpacesToChampionId = (id: string): string => {
+      // Insert space before capital letters (except the first one)
+      return id.replace(/([A-Z])/g, ' $1').trim();
+    };
 
-    const files = fs.readdirSync(champDir);
+    // Try multiple folder name variations
+    const possibleFolderNames = [
+      championId,                          // e.g., "XinZhao"
+      addSpacesToChampionId(championId),   // e.g., "Xin Zhao"
+    ];
+
+    let champDir = "";
+    let files: string[] = [];
+
+    // Find which folder actually exists
+    for (const folderName of possibleFolderNames) {
+      const testDir = path.join(settings.skinsRepoPath, "skins", folderName);
+      if (fs.existsSync(testDir)) {
+        champDir = testDir;
+        files = fs.readdirSync(champDir);
+        break;
+      }
+    }
+
+    if (!champDir || files.length === 0) {
+      log.warn(`Champion folder not found for: ${championId}`);
+      return null;
+    }
 
     // 1. Try exact match with En name
     const exactMatch = files.find(f => f.toLowerCase() === `${skinNameEn.toLowerCase()}.zip` || f.toLowerCase() === `${skinNameEn.toLowerCase()}.fantome`);
@@ -122,12 +147,28 @@ const registerIpcHandlers = (): void => {
     const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
     if (!settings.skinsRepoPath) return [];
 
-    const champDir = path.join(settings.skinsRepoPath, "skins", championId);
-    if (!fs.existsSync(champDir)) return [];
+    // Helper function to convert "XinZhao" to "Xin Zhao"
+    const addSpacesToChampionId = (id: string): string => {
+      return id.replace(/([A-Z])/g, ' $1').trim();
+    };
 
-    return fs.readdirSync(champDir)
-      .filter(f => f.endsWith(".zip") || f.endsWith(".fantome"))
-      .map(f => path.join(champDir, f));
+    // Try multiple folder name variations
+    const possibleFolderNames = [
+      championId,
+      addSpacesToChampionId(championId),
+    ];
+
+    // Find which folder actually exists
+    for (const folderName of possibleFolderNames) {
+      const champDir = path.join(settings.skinsRepoPath, "skins", folderName);
+      if (fs.existsSync(champDir)) {
+        return fs.readdirSync(champDir)
+          .filter(f => f.endsWith(".zip") || f.endsWith(".fantome"))
+          .map(f => path.join(champDir, f));
+      }
+    }
+
+    return [];
   });
 
   ipcMain.handle("launcher:get-game-path", async () => {
