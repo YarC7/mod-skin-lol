@@ -208,7 +208,22 @@ async function loadChampions() {
 
 // Helper function to clean champion ID for Data Dragon URLs
 function cleanChampionId(id: string): string {
-  // Remove special characters (apostrophes, periods, spaces) and convert to lowercase
+  // Special cases mapping for Data Dragon IDs
+  const specialCases: { [key: string]: string } = {
+    "Cho'Gath": "Chogath",
+    "Kai'Sa": "Kaisa",
+    "Nunu & Willump": "Nunu",
+    "Renata Glasc": "Renata",
+    "Vel'Koz": "Velkoz",
+    "Wukong": "MonkeyKing",
+  };
+
+  // Check if there's a special case mapping
+  if (specialCases[id]) {
+    return specialCases[id];
+  }
+
+  // Otherwise, just remove special characters
   return id.replace(/['.\s&]/g, '');
 }
 
