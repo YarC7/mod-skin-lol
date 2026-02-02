@@ -464,6 +464,22 @@ const registerIpcHandlers = (): void => {
       }
     }
   );
+
+  ipcMain.handle(
+    "load-metadata",
+    async (): Promise<any> => {
+      try {
+        const filePath = getResourcePath('champion_metadata.json');
+        const data = fs.readFileSync(filePath, "utf-8");
+        const metaData = JSON.parse(data);
+        return metaData;
+      } catch (error) {
+        log.error("Error loading meta data:", error);
+        return null;
+      }
+    }
+  );
+
 };
 
 const createWindow = (): void => {

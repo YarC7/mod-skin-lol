@@ -6,6 +6,7 @@ import { contextBridge, ipcRenderer } from "electron";
 contextBridge.exposeInMainWorld("electronAPI", {
   loadChampions: () => ipcRenderer.invoke("load-champions"),
   loadSkins: (championId: string) => ipcRenderer.invoke("load-skins", championId),
+  loadMetadata: () => ipcRenderer.invoke("load-metadata"),
   selectFolder: () => ipcRenderer.invoke("launcher:select-folder"),
   selectFile: (filters: any) => ipcRenderer.invoke("launcher:select-file", filters),
   saveSettings: (settings: any) => ipcRenderer.invoke("launcher:save-settings", settings),

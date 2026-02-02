@@ -20,7 +20,8 @@ const config: ForgeConfig = {
     asar: true,
     icon: './assets/icon.ico',
     extraResource: [
-      "./champion_skins_full.json"
+      "./champion_skins_full.json",
+      "./champion_metadata.json",
     ]
   },
   rebuildConfig: {},
@@ -51,7 +52,7 @@ const config: ForgeConfig = {
         entryPoints: [
           {
             html: './src/index.html',
-            js: './src/renderer.ts',
+            js: './src/renderer.tsx',
             name: 'main_window',
             preload: {
               js: './src/preload.ts',

@@ -1,0 +1,1536 @@
+{
+    "Aatrox": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Ahri": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "slayer"
+        ]
+    },
+    "Akali": {
+        "roles": [
+            "mid",
+            "top"
+        ],
+        "classes": [
+            "slayer",
+            "mage"
+        ]
+    },
+    "Akshan": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "marksman",
+            "slayer"
+        ]
+    },
+    "Alistar": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "tank",
+            "controller"
+        ]
+    },
+    "Ambessa": {
+        "roles": [
+            "top",
+            "jungle"
+        ],
+        "classes": [
+            "fighter"
+        ]
+    },
+    "Amumu": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "tank",
+            "mage"
+        ]
+    },
+    "Anivia": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    },
+    "Annie": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Aphelios": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman"
+        ]
+    },
+    "Ashe": {
+        "roles": [
+            "adc",
+            "support"
+        ],
+        "classes": [
+            "marksman",
+            "controller"
+        ]
+    },
+    "Aurelion Sol": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Azir": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "marksman"
+        ]
+    },
+    "Bard": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller",
+            "mage"
+        ]
+    },
+    "Bel'Veth": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Blitzcrank": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "tank",
+            "controller"
+        ]
+    },
+    "Brand": {
+        "roles": [
+            "support",
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Braum": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "tank",
+            "controller"
+        ]
+    },
+    "Briar": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Caitlyn": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman"
+        ]
+    },
+    "Camille": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Cassiopeia": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Cho'Gath": {
+        "roles": [
+            "top",
+            "jungle"
+        ],
+        "classes": [
+            "tank",
+            "mage"
+        ]
+    },
+    "Corki": {
+        "roles": [
+            "mid",
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "mage"
+        ]
+    },
+    "Darius": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Diana": {
+        "roles": [
+            "jungle",
+            "mid"
+        ],
+        "classes": [
+            "fighter",
+            "mage"
+        ]
+    },
+    "Dr. Mundo": {
+        "roles": [
+            "top",
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Draven": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "slayer"
+        ]
+    },
+    "Ekko": {
+        "roles": [
+            "jungle",
+            "mid"
+        ],
+        "classes": [
+            "slayer",
+            "mage"
+        ]
+    },
+    "Elise": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "mage",
+            "fighter"
+        ]
+    },
+    "Evelynn": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "slayer",
+            "mage"
+        ]
+    },
+    "Ezreal": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "mage"
+        ]
+    },
+    "Fiddlesticks": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    },
+    "Fiora": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Fizz": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "slayer",
+            "mage"
+        ]
+    },
+    "Galio": {
+        "roles": [
+            "mid",
+            "support"
+        ],
+        "classes": [
+            "tank",
+            "mage"
+        ]
+    },
+    "Gangplank": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "marksman"
+        ]
+    },
+    "Garen": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Gnar": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Gragas": {
+        "roles": [
+            "top",
+            "jungle",
+            "mid"
+        ],
+        "classes": [
+            "fighter",
+            "mage"
+        ]
+    },
+    "Graves": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "marksman",
+            "fighter"
+        ]
+    },
+    "Gwen": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Hecarim": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Heimerdinger": {
+        "roles": [
+            "mid",
+            "support"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    },
+    "Hwei": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Illaoi": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Irelia": {
+        "roles": [
+            "top",
+            "mid"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Ivern": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "controller",
+            "mage"
+        ]
+    },
+    "Janna": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller",
+            "mage"
+        ]
+    },
+    "Jarvan IV": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Jax": {
+        "roles": [
+            "top",
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Jayce": {
+        "roles": [
+            "top",
+            "mid"
+        ],
+        "classes": [
+            "fighter",
+            "marksman"
+        ]
+    },
+    "Jhin": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "mage"
+        ]
+    },
+    "Jinx": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman"
+        ]
+    },
+    "K'Sante": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "tank",
+            "fighter"
+        ]
+    },
+    "Kai'Sa": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "slayer"
+        ]
+    },
+    "Kalista": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman"
+        ]
+    },
+    "Karma": {
+        "roles": [
+            "support",
+            "mid"
+        ],
+        "classes": [
+            "controller",
+            "mage"
+        ]
+    },
+    "Karthus": {
+        "roles": [
+            "jungle",
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Kassadin": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "slayer",
+            "mage"
+        ]
+    },
+    "Katarina": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "slayer",
+            "mage"
+        ]
+    },
+    "Kayle": {
+        "roles": [
+            "top",
+            "mid"
+        ],
+        "classes": [
+            "marksman",
+            "mage"
+        ]
+    },
+    "Kayn": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Kennen": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "mage",
+            "marksman"
+        ]
+    },
+    "Kha'Zix": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "slayer"
+        ]
+    },
+    "Kindred": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "marksman",
+            "slayer"
+        ]
+    },
+    "Kled": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Kog'Maw": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "mage"
+        ]
+    },
+    "LeBlanc": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "slayer",
+            "mage"
+        ]
+    },
+    "Lee Sin": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Leona": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "tank",
+            "controller"
+        ]
+    },
+    "Lillia": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "mage"
+        ]
+    },
+    "Lissandra": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    },
+    "Lucian": {
+        "roles": [
+            "adc",
+            "mid"
+        ],
+        "classes": [
+            "marksman",
+            "slayer"
+        ]
+    },
+    "Lulu": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller",
+            "mage"
+        ]
+    },
+    "Lux": {
+        "roles": [
+            "mid",
+            "support"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    },
+    "Malphite": {
+        "roles": [
+            "top",
+            "mid"
+        ],
+        "classes": [
+            "tank",
+            "mage"
+        ]
+    },
+    "Malzahar": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    },
+    "Maokai": {
+        "roles": [
+            "top",
+            "support"
+        ],
+        "classes": [
+            "tank",
+            "controller"
+        ]
+    },
+    "Master Yi": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "slayer",
+            "fighter"
+        ]
+    },
+    "Milio": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller"
+        ]
+    },
+    "Miss Fortune": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman"
+        ]
+    },
+    "Mordekaiser": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "mage"
+        ]
+    },
+    "Morgana": {
+        "roles": [
+            "support",
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    },
+    "Naafiri": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "slayer"
+        ]
+    },
+    "Nami": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller",
+            "mage"
+        ]
+    },
+    "Nasus": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Nautilus": {
+        "roles": [
+            "support",
+            "jungle"
+        ],
+        "classes": [
+            "tank",
+            "controller"
+        ]
+    },
+    "Neeko": {
+        "roles": [
+            "mid",
+            "support"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Nidalee": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "slayer",
+            "mage"
+        ]
+    },
+    "Nilah": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Nocturne": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "slayer",
+            "fighter"
+        ]
+    },
+    "Nunu & Willump": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "tank",
+            "fighter"
+        ]
+    },
+    "Olaf": {
+        "roles": [
+            "top",
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Orianna": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    },
+    "Ornn": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "tank",
+            "fighter"
+        ]
+    },
+    "Pantheon": {
+        "roles": [
+            "top",
+            "mid",
+            "support"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Poppy": {
+        "roles": [
+            "top",
+            "jungle"
+        ],
+        "classes": [
+            "tank",
+            "fighter"
+        ]
+    },
+    "Pyke": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "slayer",
+            "controller"
+        ]
+    },
+    "Qiyana": {
+        "roles": [
+            "mid",
+            "jungle"
+        ],
+        "classes": [
+            "slayer"
+        ]
+    },
+    "Quinn": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "marksman",
+            "slayer"
+        ]
+    },
+    "Rakan": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller"
+        ]
+    },
+    "Rammus": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "tank",
+            "fighter"
+        ]
+    },
+    "Rek'Sai": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Rell": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "tank",
+            "controller"
+        ]
+    },
+    "Renata Glasc": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller",
+            "mage"
+        ]
+    },
+    "Renekton": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Rengar": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "slayer",
+            "fighter"
+        ]
+    },
+    "Riven": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Rumble": {
+        "roles": [
+            "top",
+            "mid"
+        ],
+        "classes": [
+            "fighter",
+            "mage"
+        ]
+    },
+    "Ryze": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "fighter"
+        ]
+    },
+    "Samira": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "slayer"
+        ]
+    },
+    "Sejuani": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "tank",
+            "fighter"
+        ]
+    },
+    "Senna": {
+        "roles": [
+            "support",
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "controller"
+        ]
+    },
+    "Seraphine": {
+        "roles": [
+            "support",
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    },
+    "Sett": {
+        "roles": [
+            "top",
+            "support"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Shaco": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "slayer"
+        ]
+    },
+    "Shen": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "tank",
+            "fighter"
+        ]
+    },
+    "Shyvana": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "mage"
+        ]
+    },
+    "Singed": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "tank",
+            "fighter"
+        ]
+    },
+    "Sion": {
+        "roles": [
+            "top",
+            "support"
+        ],
+        "classes": [
+            "tank",
+            "fighter"
+        ]
+    },
+    "Sivir": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman"
+        ]
+    },
+    "Skarner": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Smolder": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "mage"
+        ]
+    },
+    "Sona": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller",
+            "mage"
+        ]
+    },
+    "Soraka": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller",
+            "mage"
+        ]
+    },
+    "Swain": {
+        "roles": [
+            "support",
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "fighter"
+        ]
+    },
+    "Sylas": {
+        "roles": [
+            "mid",
+            "jungle"
+        ],
+        "classes": [
+            "mage",
+            "fighter"
+        ]
+    },
+    "Syndra": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Tahm Kench": {
+        "roles": [
+            "top",
+            "support"
+        ],
+        "classes": [
+            "tank",
+            "controller"
+        ]
+    },
+    "Taliyah": {
+        "roles": [
+            "jungle",
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    },
+    "Talon": {
+        "roles": [
+            "mid",
+            "jungle"
+        ],
+        "classes": [
+            "slayer"
+        ]
+    },
+    "Taric": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller",
+            "tank"
+        ]
+    },
+    "Teemo": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "marksman",
+            "mage"
+        ]
+    },
+    "Thresh": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller",
+            "tank"
+        ]
+    },
+    "Tristana": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "slayer"
+        ]
+    },
+    "Trundle": {
+        "roles": [
+            "top",
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Tryndamere": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Twisted Fate": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Twitch": {
+        "roles": [
+            "adc",
+            "jungle"
+        ],
+        "classes": [
+            "marksman",
+            "slayer"
+        ]
+    },
+    "Udyr": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Urgot": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "marksman"
+        ]
+    },
+    "Varus": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "mage"
+        ]
+    },
+    "Vayne": {
+        "roles": [
+            "top",
+            "adc"
+        ],
+        "classes": [
+            "marksman",
+            "slayer"
+        ]
+    },
+    "Veigar": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Vel'Koz": {
+        "roles": [
+            "mid",
+            "support"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Vex": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Vi": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Viego": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "slayer",
+            "fighter"
+        ]
+    },
+    "Viktor": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Vladimir": {
+        "roles": [
+            "top",
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "fighter"
+        ]
+    },
+    "Volibear": {
+        "roles": [
+            "top",
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Warwick": {
+        "roles": [
+            "top",
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Wukong": {
+        "roles": [
+            "top",
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Xayah": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman"
+        ]
+    },
+    "Xerath": {
+        "roles": [
+            "mid",
+            "support"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Xin Zhao": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Yasuo": {
+        "roles": [
+            "top",
+            "mid"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Yone": {
+        "roles": [
+            "top",
+            "mid"
+        ],
+        "classes": [
+            "fighter",
+            "slayer"
+        ]
+    },
+    "Yorick": {
+        "roles": [
+            "top"
+        ],
+        "classes": [
+            "fighter",
+            "tank"
+        ]
+    },
+    "Yuumi": {
+        "roles": [
+            "support"
+        ],
+        "classes": [
+            "controller",
+            "mage"
+        ]
+    },
+    "Zac": {
+        "roles": [
+            "jungle"
+        ],
+        "classes": [
+            "tank",
+            "fighter"
+        ]
+    },
+    "Zed": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "slayer"
+        ]
+    },
+    "Zeri": {
+        "roles": [
+            "adc"
+        ],
+        "classes": [
+            "marksman"
+        ]
+    },
+    "Ziggs": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage"
+        ]
+    },
+    "Zilean": {
+        "roles": [
+            "support",
+            "mid"
+        ],
+        "classes": [
+            "controller",
+            "mage"
+        ]
+    },
+    "Zoe": {
+        "roles": [
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    },
+    "Zyra": {
+        "roles": [
+            "support",
+            "mid"
+        ],
+        "classes": [
+            "mage",
+            "controller"
+        ]
+    }
+}

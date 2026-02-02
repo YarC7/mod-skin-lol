@@ -1,0 +1,396 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import './index.css';
+
+// Asset Imports
+import TopIcon from '../assets/role/Top_icon.png';
+import JungleIcon from '../assets/role/Jungle_icon.png';
+import MidIcon from '../assets/role/Middle_icon.png';
+import ADCIcon from '../assets/role/Bottom_icon.png';
+import SupportIcon from '../assets/role/Support_icon.png';
+
+import TankIcon from '../assets/class/Tank_icon.png';
+import FighterIcon from '../assets/class/Fighter_icon.png';
+import SlayerIcon from '../assets/class/Slayer_icon.png';
+import MarksmanIcon from '../assets/class/Marksman_icon.png';
+import MageIcon from '../assets/class/Mage_icon.png';
+import ControllerIcon from '../assets/class/Controller_icon.png';
+
+declare global {
+    interface Window {
+        electronAPI: {
+            loadChampions: () => Promise<Champion[]>;
+            loadSkins: (championId: string) => Promise<ChampionSkins | null>;
+            loadMetadata: () => Promise<ChampionMetadata | null>;
+            selectFolder: () => Promise<{ canceled: boolean; path: string }>;
+            selectFile: (filters: any) => Promise<{ canceled: boolean; path: string }>;
+            saveSettings: (settings: any) => Promise<boolean>;
+            loadSettings: () => Promise<{ managerPath: string; skinsRepoPath: string; skinMappings?: any; gamePath?: string }>;
+            runModTools: (command: string, args: string[]) => Promise<{ success: boolean; stdout: string; stderr?: string }>;
+            findModFile: (championId: string, skinNameEn: string, skinNum: number) => Promise<string | null>;
+            listModFiles: (championId: string) => Promise<string[]>;
+            startManager: () => Promise<boolean>;
+            killManager: () => Promise<boolean>;
+            clearMods: () => Promise<boolean>;
+            getGamePath: () => Promise<string>;
+            enableModInProfile: (modName: string) => Promise<boolean>;
+            checkForUpdates: () => Promise<any>;
+            getProfilePaths: () => Promise<{ name: string; folder: string; config: string } | null>;
+            log: (level: "info" | "warn" | "error", message: string) => Promise<void>;
+            getLogPath: () => Promise<string>;
+        };
+    }
+}
+
+interface Skin {
+    num: number;
+    name_en: string;
+    name_vi: string;
+    splash: string;
+    loading: string;
+}
+
+interface Champion {
+    id: string;
+    name_en: string;
+    name_vi: string;
+    roles?: string[];
+    classes?: string[];
+}
+
+interface ChampionMetadata {
+    [championId: string]: {
+        roles: string[];
+        classes: string[];
+    };
+}
+
+interface ChampionSkins {
+    id: string;
+    name_en: string;
+    name_vi: string;
+    skins: Skin[];
+}
+
+interface Settings {
+    managerPath: string;
+    skinsRepoPath: string;
+    skinMappings: Record<string, string>;
+    gamePath: string;
+}
+
+const App: React.FC = () => {
+    const [champions, setChampions] = useState<Champion[]>([]);
+    const [metadata, setMetadata] = useState<ChampionMetadata>({});
+    const [settings, setSettings] = useState<Settings>({
+        managerPath: "",
+        skinsRepoPath: "",
+        skinMappings: {},
+        gamePath: ""
+    });
+    const [showSettings, setShowSettings] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [activeFilters, setActiveFilters] = useState({
+        roles: new Set<string>(),
+        classes: new Set<string>()
+    });
+    const [selectedChampId, setSelectedChampId] = useState<string | null>(null);
+    const [selectedChampSkins, setSelectedChampSkins] = useState<ChampionSkins | null>(null);
+    const [selectedSkin, setSelectedSkin] = useState<Skin | null>(null);
+    const [isApplying, setIsApplying] = useState<string | null>(null);
+
+    // Load Initial Data
+    useEffect(() => {
+        const init = async () => {
+            try {
+                const meta = await window.electronAPI.loadMetadata();
+                if (meta) setMetadata(meta);
+
+                const champs = await window.electronAPI.loadChampions();
+                const mergedChamps = champs.map(c => ({
+                    ...c,
+                    roles: meta?.[c.id]?.roles || [],
+                    classes: meta?.[c.id]?.classes || []
+                }));
+                setChampions(mergedChamps);
+
+                const savedSettings = await window.electronAPI.loadSettings();
+                if (savedSettings) {
+                    setSettings(prev => ({
+                        ...prev,
+                        ...savedSettings,
+                        skinMappings: savedSettings.skinMappings || {}
+                    }));
+                }
+            } catch (err) {
+                console.error("Initialization error:", err);
+            }
+        };
+        init();
+    }, []);
+
+    // Filter Champions
+    const filteredChampions = useMemo(() => {
+        return champions.filter(champ => {
+            const matchesSearch = !searchQuery ||
+                champ.name_vi.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                champ.name_en.toLowerCase().includes(searchQuery.toLowerCase());
+
+            const matchesRole = activeFilters.roles.size === 0 ||
+                (champ.roles && champ.roles.some(role => activeFilters.roles.has(role)));
+
+            const matchesClass = activeFilters.classes.size === 0 ||
+                (champ.classes && champ.classes.some(cls => activeFilters.classes.has(cls)));
+
+            return matchesSearch && matchesRole && matchesClass;
+        });
+    }, [champions, searchQuery, activeFilters]);
+
+    // Actions
+    const handleShowDetail = async (id: string) => {
+        const data = await window.electronAPI.loadSkins(id);
+        if (data) {
+            setSelectedChampId(id);
+            setSelectedChampSkins(data);
+            setSelectedSkin(data.skins[0]);
+        }
+    };
+
+    const handleApplySkin = async (skin: Skin) => {
+        if (!settings.managerPath) {
+            alert("Please set CS-LOL Manager path in Settings first!");
+            setShowSettings(true);
+            return;
+        }
+
+        setIsApplying(skin.name_en);
+        try {
+            let modPath = settings.skinMappings[skin.name_en];
+            if (!modPath) {
+                const autoPath = await window.electronAPI.findModFile(selectedChampId!, skin.name_en, skin.num);
+                if (autoPath) {
+                    modPath = autoPath;
+                } else {
+                    const files = await window.electronAPI.listModFiles(selectedChampId!);
+                    if (files.length > 0) {
+                        const fileList = files.map(f => f.split(/[\\/]/).pop()).join("\n");
+                        const choice = prompt(`Could not find an exact match for "${skin.name_vi}". \nAvailable files:\n${fileList}\n\nEnter filename to use:`);
+                        if (choice) {
+                            const selectedFile = files.find(f => f.toLowerCase().endsWith(choice.toLowerCase()));
+                            if (selectedFile) modPath = selectedFile;
+                        }
+                    }
+                    if (!modPath) {
+                        const result = await window.electronAPI.selectFile([{ name: "Fantome/Zip Mods", extensions: ["fantome", "zip"] }]);
+                        if (result.canceled) return;
+                        modPath = result.path;
+                    }
+                }
+                const newSettings = {
+                    ...settings,
+                    skinMappings: { ...settings.skinMappings, [skin.name_en]: modPath }
+                };
+                setSettings(newSettings);
+                await window.electronAPI.saveSettings(newSettings);
+            }
+
+            await window.electronAPI.killManager();
+            await window.electronAPI.clearMods();
+
+            const modName = skin.name_en.replace(/[^a-zA-Z0-9]/g, "_");
+            await window.electronAPI.runModTools("import", [modPath, `${settings.managerPath}\\installed\\${modName}`]);
+            await window.electronAPI.enableModInProfile(modName);
+            await window.electronAPI.startManager();
+
+            alert(`${skin.name_vi} applied successfully!`);
+        } catch (err: any) {
+            alert(`Error: ${err.message}`);
+        } finally {
+            setIsApplying(null);
+        }
+    };
+
+    const toggleFilter = (type: 'roles' | 'classes', value: string) => {
+        setActiveFilters(prev => {
+            const next = new Set(prev[type]);
+            if (next.has(value)) next.delete(value);
+            else next.add(value);
+            return { ...prev, [type]: next };
+        });
+    };
+
+    const clearFilters = () => {
+        setSearchQuery("");
+        setActiveFilters({ roles: new Set(), classes: new Set() });
+    };
+
+    const cleanChampionId = (id: string) => {
+        const special: Record<string, string> = {
+            "Cho'Gath": "Chogath", "Kai'Sa": "Kaisa", "Nunu & Willump": "Nunu",
+            "Renata Glasc": "Renata", "Vel'Koz": "Velkoz", "Wukong": "MonkeyKing"
+        };
+        return special[id] || id.replace(/['.\s&]/g, '');
+    };
+
+    return (
+        <div className="app-container">
+            {/* List View */}
+            <div id="listView" style={{ display: selectedChampId ? 'none' : 'block' }}>
+                <div id="header">
+                    <h1>Mod Skin LoL Premium and Free Forever</h1>
+                    <button id="settingsToggle" onClick={() => setShowSettings(!showSettings)}>
+                        ⚙️ Settings
+                    </button>
+                </div>
+
+                {showSettings && (
+                    <div id="settingsPanel">
+                        <div className="settings-group">
+                            <label>CS-LOL Manager Path:</label>
+                            <div className="path-input">
+                                <span>{settings.managerPath || "Not set"}</span>
+                                <button onClick={async () => {
+                                    const res = await window.electronAPI.selectFolder();
+                                    if (!res.canceled) {
+                                        const next = { ...settings, managerPath: res.path };
+                                        setSettings(next);
+                                        await window.electronAPI.saveSettings(next);
+                                    }
+                                }}>Browse</button>
+                            </div>
+                        </div>
+                        <div className="settings-group">
+                            <label>Skins Repository Path:</label>
+                            <div className="path-input">
+                                <span>{settings.skinsRepoPath || "Not set"}</span>
+                                <button onClick={async () => {
+                                    const res = await window.electronAPI.selectFolder();
+                                    if (!res.canceled) {
+                                        const next = { ...settings, skinsRepoPath: res.path };
+                                        setSettings(next);
+                                        await window.electronAPI.saveSettings(next);
+                                    }
+                                }}>Browse</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search champions..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+
+                <div id="filterContainer">
+                    <div className="filter-section">
+                        <h3>Roles</h3>
+                        <div className="filter-buttons">
+                            {[
+                                { id: 'top', label: 'Top', icon: TopIcon },
+                                { id: 'jungle', label: 'Jungle', icon: JungleIcon },
+                                { id: 'mid', label: 'Mid', icon: MidIcon },
+                                { id: 'adc', label: 'ADC', icon: ADCIcon },
+                                { id: 'support', label: 'Support', icon: SupportIcon },
+                            ].map(r => (
+                                <button
+                                    key={r.id}
+                                    className={`role-filter ${activeFilters.roles.has(r.id) ? 'active' : ''}`}
+                                    onClick={() => toggleFilter('roles', r.id)}
+                                >
+                                    <img src={r.icon} alt={r.label} />
+                                    <span>{r.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <button id="clearFilters" className="clear-filters-btn" onClick={clearFilters}>
+                        🔁
+                    </button>
+                    </div>
+
+                    <div className="filter-section">
+                        <h3>Classes</h3>
+                        <div className="filter-buttons">
+                            {[
+                                { id: 'tank', label: 'Tank', icon: TankIcon },
+                                { id: 'fighter', label: 'Fighter', icon: FighterIcon },
+                                { id: 'slayer', label: 'Slayer', icon: SlayerIcon },
+                                { id: 'marksman', label: 'Marksman', icon: MarksmanIcon },
+                                { id: 'mage', label: 'Mage', icon: MageIcon },
+                                { id: 'controller', label: 'Controller', icon: ControllerIcon },
+                            ].map(c => (
+                                <button
+                                    key={c.id}
+                                    className={`class-filter ${activeFilters.classes.has(c.id) ? 'active' : ''}`}
+                                    onClick={() => toggleFilter('classes', c.id)}
+                                >
+                                    <img src={c.icon} alt={c.label} />
+                                    <span>{c.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    
+                </div>
+
+                <div className="champion-counter">
+                    Showing {filteredChampions.length} of {champions.length} champions
+                </div>
+
+                <div id="championList">
+                    {filteredChampions.map(champ => (
+                        <div key={champ.id} className="champion-item" onClick={() => handleShowDetail(champ.id)}>
+                            <img
+                                src={`https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/${cleanChampionId(champ.id)}.png`}
+                                onError={(e) => (e.currentTarget.src = 'https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/Aatrox.png')}
+                            />
+                            <span>{champ.name_vi}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Detail View */}
+            {selectedChampId && selectedChampSkins && (
+                <div id="detailView">
+                    <button id="backButton" onClick={() => setSelectedChampId(null)}>← Back to List</button>
+                    <div id="detailApp">
+                        <div id="sidebar">
+                            <div id="skinList">
+                                {selectedChampSkins.skins.map(skin => (
+                                    <div
+                                        key={skin.num}
+                                        className={`skin-item ${selectedSkin?.num === skin.num ? 'active' : ''}`}
+                                        onClick={() => setSelectedSkin(skin)}
+                                    >
+                                        <img src={skin.loading} />
+                                        <span>{skin.name_vi}</span>
+                                        <button
+                                            className="apply-skin-btn"
+                                            disabled={isApplying !== null}
+                                            onClick={(e) => { e.stopPropagation(); handleApplySkin(skin); }}
+                                        >
+                                            {isApplying === skin.name_en ? "Applying..." : "Apply"}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div id="mainContent">
+                            {selectedSkin && (
+                                <>
+                                    <img id="splashImage" src={selectedSkin.splash} />
+                                    <div id="skinTitle">{selectedSkin.name_vi}</div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default App;
