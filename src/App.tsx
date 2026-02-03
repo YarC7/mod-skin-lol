@@ -179,7 +179,7 @@ const App: React.FC = () => {
             // Load chromas for the first skin automatically
             const chromas = await window.electronAPI.loadChromas(id, data.skins[0].name_en);
             setSelectedChromas(chromas);
-            setSelectedChromaId(chromas.length > 0 ? chromas[0].id : null);
+            setSelectedChromaId(null);
         }
     };
 
@@ -189,7 +189,7 @@ const App: React.FC = () => {
         if (selectedChampId) {
             const chromas = await window.electronAPI.loadChromas(selectedChampId, skin.name_en);
             setSelectedChromas(chromas);
-            setSelectedChromaId(chromas.length > 0 ? chromas[0].id : null);
+            setSelectedChromaId(null);
         }
     };
 
@@ -460,7 +460,7 @@ const App: React.FC = () => {
                                                     <div
                                                         key={chroma.id}
                                                         className={`chroma-item ${selectedChromaId === chroma.id ? 'active' : ''}`}
-                                                        onClick={() => setSelectedChromaId(chroma.id)}
+                                                        onClick={() => setSelectedChromaId(selectedChromaId === chroma.id ? null : chroma.id)}
                                                     >
                                                         <img src={chroma.image} alt={chroma.name} />
                                                         <div className="chroma-id">{chroma.id}</div>
