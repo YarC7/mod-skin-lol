@@ -22,12 +22,14 @@ declare global {
             loadChampions: () => Promise<Champion[]>;
             loadSkins: (championId: string) => Promise<ChampionSkins | null>;
             loadMetadata: () => Promise<ChampionMetadata | null>;
+            loadChromas: (championId: string, skinNameEn: string) => Promise<Chroma[]>;
             selectFolder: () => Promise<{ canceled: boolean; path: string }>;
             selectFile: (filters: any) => Promise<{ canceled: boolean; path: string }>;
             saveSettings: (settings: any) => Promise<boolean>;
             loadSettings: () => Promise<{ managerPath: string; skinsRepoPath: string; skinMappings?: any; gamePath?: string }>;
             runModTools: (command: string, args: string[]) => Promise<{ success: boolean; stdout: string; stderr?: string }>;
             findModFile: (championId: string, skinNameEn: string, skinNum: number) => Promise<string | null>;
+            findChromaFile: (championId: string, skinNameEn: string, chromaId: string) => Promise<string | null>;
             listModFiles: (championId: string) => Promise<string[]>;
             startManager: () => Promise<boolean>;
             killManager: () => Promise<boolean>;
@@ -51,6 +53,12 @@ interface Skin {
     name_vi: string;
     splash: string;
     loading: string;
+}
+
+interface Chroma {
+    id: string;
+    name: string;
+    image: string;
 }
 
 interface Champion {
@@ -101,6 +109,8 @@ const App: React.FC = () => {
     const [selectedChampId, setSelectedChampId] = useState<string | null>(null);
     const [selectedChampSkins, setSelectedChampSkins] = useState<ChampionSkins | null>(null);
     const [selectedSkin, setSelectedSkin] = useState<Skin | null>(null);
+    const [selectedChromas, setSelectedChromas] = useState<Chroma[]>([]);
+    const [selectedChromaId, setSelectedChromaId] = useState<string | null>(null);
     const [isApplying, setIsApplying] = useState<string | null>(null);
 
     // Load Initial Data
@@ -166,6 +176,20 @@ const App: React.FC = () => {
             setSelectedChampId(id);
             setSelectedChampSkins(data);
             setSelectedSkin(data.skins[0]);
+            // Load chromas for the first skin automatically
+            const chromas = await window.electronAPI.loadChromas(id, data.skins[0].name_en);
+            setSelectedChromas(chromas);
+            setSelectedChromaId(chromas.length > 0 ? chromas[0].id : null);
+        }
+    };
+
+    const handleSelectSkin = async (skin: Skin) => {
+        setSelectedSkin(skin);
+        // Load chromas for the selected skin
+        if (selectedChampId) {
+            const chromas = await window.electronAPI.loadChromas(selectedChampId, skin.name_en);
+            setSelectedChromas(chromas);
+            setSelectedChromaId(chromas.length > 0 ? chromas[0].id : null);
         }
     };
 
@@ -178,44 +202,65 @@ const App: React.FC = () => {
 
         setIsApplying(skin.name_en);
         try {
-            let modPath = settings.skinMappings[skin.name_en];
-            if (!modPath) {
-                const autoPath = await window.electronAPI.findModFile(selectedChampId!, skin.name_en, skin.num);
-                if (autoPath) {
-                    modPath = autoPath;
+            let modPath = "";
+
+            // Check if a chroma is selected
+            if (selectedChromaId && selectedChromas.length > 0) {
+                // Try to find chroma file
+                const chromaPath = await window.electronAPI.findChromaFile(selectedChampId!, skin.name_en, selectedChromaId);
+                if (chromaPath) {
+                    modPath = chromaPath;
                 } else {
-                    const files = await window.electronAPI.listModFiles(selectedChampId!);
-                    if (files.length > 0) {
-                        const fileList = files.map(f => f.split(/[\\/]/).pop()).join("\n");
-                        const choice = prompt(`Could not find an exact match for "${skin.name_vi}". \nAvailable files:\n${fileList}\n\nEnter filename to use:`);
-                        if (choice) {
-                            const selectedFile = files.find(f => f.toLowerCase().endsWith(choice.toLowerCase()));
-                            if (selectedFile) modPath = selectedFile;
+                    alert(`Could not find chroma file for ID: ${selectedChromaId}`);
+                    return;
+                }
+            } else {
+                // Use regular skin file
+                modPath = settings.skinMappings[skin.name_en];
+                if (!modPath) {
+                    const autoPath = await window.electronAPI.findModFile(selectedChampId!, skin.name_en, skin.num);
+                    if (autoPath) {
+                        modPath = autoPath;
+                    } else {
+                        const files = await window.electronAPI.listModFiles(selectedChampId!);
+                        if (files.length > 0) {
+                            const fileList = files.map(f => f.split(/[\\/]/).pop()).join("\n");
+                            const choice = prompt(`Could not find an exact match for "${skin.name_vi}". \nAvailable files:\n${fileList}\n\nEnter filename to use:`);
+                            if (choice) {
+                                const selectedFile = files.find(f => f.toLowerCase().endsWith(choice.toLowerCase()));
+                                if (selectedFile) modPath = selectedFile;
+                            }
+                        }
+                        if (!modPath) {
+                            const result = await window.electronAPI.selectFile([{ name: "Fantome/Zip Mods", extensions: ["fantome", "zip"] }]);
+                            if (result.canceled) return;
+                            modPath = result.path;
                         }
                     }
-                    if (!modPath) {
-                        const result = await window.electronAPI.selectFile([{ name: "Fantome/Zip Mods", extensions: ["fantome", "zip"] }]);
-                        if (result.canceled) return;
-                        modPath = result.path;
-                    }
+                    const newSettings = {
+                        ...settings,
+                        skinMappings: { ...settings.skinMappings, [skin.name_en]: modPath }
+                    };
+                    setSettings(newSettings);
+                    await window.electronAPI.saveSettings(newSettings);
                 }
-                const newSettings = {
-                    ...settings,
-                    skinMappings: { ...settings.skinMappings, [skin.name_en]: modPath }
-                };
-                setSettings(newSettings);
-                await window.electronAPI.saveSettings(newSettings);
             }
 
             await window.electronAPI.killManager();
             await window.electronAPI.clearMods();
 
-            const modName = skin.name_en.replace(/[^a-zA-Z0-9]/g, "_");
+            const modName = selectedChromaId
+                ? `${skin.name_en.replace(/[^a-zA-Z0-9]/g, "_")}_${selectedChromaId}`
+                : skin.name_en.replace(/[^a-zA-Z0-9]/g, "_");
+
             await window.electronAPI.runModTools("import", [modPath, `${settings.managerPath}\\installed\\${modName}`]);
             await window.electronAPI.enableModInProfile(modName);
             await window.electronAPI.startManager();
 
-            alert(`${skin.name_vi} applied successfully!`);
+            const appliedName = selectedChromaId
+                ? `${skin.name_vi} (Chroma ${selectedChromaId})`
+                : skin.name_vi;
+            // alert(`${appliedName} applied successfully!`);
         } catch (err: any) {
             alert(`Error: ${err.message}`);
         } finally {
@@ -364,11 +409,11 @@ const App: React.FC = () => {
                 <div id="championList">
                     {filteredChampions.map(champ => (
                         <div key={champ.id} className="champion-item" onClick={() => handleShowDetail(champ.id)}>
-                            <img
+                            {/* <img
                                 src={`https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/${cleanChampionId(champ.id)}.png`}
                                 onError={(e) => (e.currentTarget.src = 'https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/Aatrox.png')}
                                 alt={champ.name_vi}
-                            />
+                            /> */}
                             <span>{champ.name_vi}</span>
                         </div>
                     ))}
@@ -385,7 +430,7 @@ const App: React.FC = () => {
                                     <div
                                         key={skin.num}
                                         className={`skin-item ${selectedSkin?.num === skin.num ? 'active' : ''}`}
-                                        onClick={() => setSelectedSkin(skin)}
+                                        onClick={() => handleSelectSkin(skin)}
                                     >
                                         <img src={skin.loading} />
                                         <span>{skin.name_vi}</span>
@@ -405,6 +450,25 @@ const App: React.FC = () => {
                                 <>
                                     <img id="splashImage" src={selectedSkin.splash} />
                                     <div id="skinTitle">{selectedSkin.name_vi}</div>
+                                    {selectedChromas.length > 0 && (
+                                        <div className="chromas-section">
+                                            <div className="chromas-header">
+                                                <span className="chromas-title">Chromas ({selectedChromas.length})</span>
+                                            </div>
+                                            <div className="chromas-grid">
+                                                {selectedChromas.map(chroma => (
+                                                    <div
+                                                        key={chroma.id}
+                                                        className={`chroma-item ${selectedChromaId === chroma.id ? 'active' : ''}`}
+                                                        onClick={() => setSelectedChromaId(chroma.id)}
+                                                    >
+                                                        <img src={chroma.image} alt={chroma.name} />
+                                                        <div className="chroma-id">{chroma.id}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>

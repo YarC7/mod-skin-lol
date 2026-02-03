@@ -480,6 +480,142 @@ const registerIpcHandlers = (): void => {
     }
   );
 
+  ipcMain.handle(
+    "load-chromas",
+    async (_event, championId: string, skinNameEn: string): Promise<any[]> => {
+      try {
+        if (!fs.existsSync(SETTINGS_FILE)) return [];
+        const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+        if (!settings.skinsRepoPath) return [];
+
+        // Helper function to convert "XinZhao" to "Xin Zhao"
+        const addSpacesToChampionId = (id: string): string => {
+          return id.replace(/([A-Z])/g, ' $1').trim();
+        };
+
+        // Try multiple folder name variations
+        const possibleFolderNames = [
+          championId,
+          addSpacesToChampionId(championId),
+        ];
+
+        let chromaReadmePath = "";
+
+        // Find which folder actually exists
+        for (const folderName of possibleFolderNames) {
+          const testPath = path.join(
+            settings.skinsRepoPath,
+            "skins",
+            folderName,
+            "chromas",
+            skinNameEn,
+            "README.md"
+          );
+          if (fs.existsSync(testPath)) {
+            chromaReadmePath = testPath;
+            break;
+          }
+        }
+
+        if (!chromaReadmePath) {
+          log.info(`No chromas found for: ${championId} - ${skinNameEn}`);
+          return [];
+        }
+
+        // Parse README.md to extract chroma data
+        const content = fs.readFileSync(chromaReadmePath, "utf-8");
+        const chromas: any[] = [];
+
+        // Extract chroma IDs and names from markdown table
+        const lines = content.split("\n");
+        for (const line of lines) {
+          // Match lines like: | ![266022](url) | 266022 | Lunar Eclipse Aatrox |
+          const match = line.match(/\|\s*!\[(\d+)\]\((.*?)\)\s*\|\s*(\d+)\s*\|\s*(.*?)\s*\|/);
+          if (match) {
+            const chromaId = match[3];
+            const chromaName = match[4].trim();
+            const chromaImage = match[2];
+
+            chromas.push({
+              id: chromaId,
+              name: chromaName,
+              image: chromaImage
+            });
+          }
+        }
+
+        log.info(`Found ${chromas.length} chromas for ${skinNameEn}`);
+        return chromas;
+      } catch (error) {
+        log.error("Error loading chromas:", error);
+        return [];
+      }
+    }
+  );
+
+  ipcMain.handle(
+    "find-chroma-file",
+    async (_event, championId: string, skinNameEn: string, chromaId: string): Promise<string | null> => {
+      try {
+        if (!fs.existsSync(SETTINGS_FILE)) return null;
+        const settings: Settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8"));
+        if (!settings.skinsRepoPath) return null;
+
+        // Helper function to convert "XinZhao" to "Xin Zhao"
+        const addSpacesToChampionId = (id: string): string => {
+          return id.replace(/([A-Z])/g, ' $1').trim();
+        };
+
+        // Try multiple folder name variations
+        const possibleFolderNames = [
+          championId,
+          addSpacesToChampionId(championId),
+        ];
+
+        let chromaDir = "";
+
+        // Find which folder actually exists
+        for (const folderName of possibleFolderNames) {
+          const testPath = path.join(
+            settings.skinsRepoPath,
+            "skins",
+            folderName,
+            "chromas",
+            skinNameEn
+          );
+          if (fs.existsSync(testPath)) {
+            chromaDir = testPath;
+            break;
+          }
+        }
+
+        if (!chromaDir) {
+          log.warn(`Chroma folder not found for: ${championId} - ${skinNameEn}`);
+          return null;
+        }
+
+        // Find file matching the chroma ID
+        const files = fs.readdirSync(chromaDir);
+        const chromaFile = files.find(f =>
+          (f.endsWith(".zip") || f.endsWith(".fantome") || f.endsWith(".wad")) &&
+          f.includes(chromaId)
+        );
+
+        if (chromaFile) {
+          const fullPath = path.join(chromaDir, chromaFile);
+          log.info(`Found chroma file: ${fullPath}`);
+          return fullPath;
+        }
+
+        log.warn(`Chroma file not found for ID: ${chromaId}`);
+        return null;
+      } catch (error) {
+        log.error("Error finding chroma file:", error);
+        return null;
+      }
+    }
+  );
+
   // Window control handlers
   ipcMain.on("window:minimize", (event) => {
     const window = BrowserWindow.fromWebContents(event.sender);
