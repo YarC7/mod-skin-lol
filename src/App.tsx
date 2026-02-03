@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './index.css';
-
+import Logo from '../assets/logo.png';
 // Asset Imports
 import TopIcon from '../assets/role/Top_icon.png';
 import JungleIcon from '../assets/role/Jungle_icon.png';
@@ -89,6 +89,7 @@ const App: React.FC = () => {
     });
     const [showSettings, setShowSettings] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState<'asc' | 'desc'>('asc');
     const [activeFilters, setActiveFilters] = useState({
         roles: new Set<string>(),
         classes: new Set<string>()
@@ -128,9 +129,9 @@ const App: React.FC = () => {
         init();
     }, []);
 
-    // Filter Champions
+    // Filter and Sort Champions
     const filteredChampions = useMemo(() => {
-        return champions.filter(champ => {
+        let filtered = champions.filter(champ => {
             const matchesSearch = !searchQuery ||
                 champ.name_vi.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 champ.name_en.toLowerCase().includes(searchQuery.toLowerCase());
@@ -143,7 +144,16 @@ const App: React.FC = () => {
 
             return matchesSearch && matchesRole && matchesClass;
         });
-    }, [champions, searchQuery, activeFilters]);
+
+        // Sort champions by name (A-Z or Z-A)
+        return filtered.sort((a, b) => {
+            if (sortBy === 'asc') {
+                return a.name_vi.localeCompare(b.name_vi);
+            } else {
+                return b.name_vi.localeCompare(a.name_vi);
+            }
+        });
+    }, [champions, searchQuery, activeFilters, sortBy]);
 
     // Actions
     const handleShowDetail = async (id: string) => {
@@ -232,14 +242,22 @@ const App: React.FC = () => {
     };
 
     return (
-        <div className="app-container">
+        <div className="app-container dark-theme">
             {/* List View */}
             <div id="listView" style={{ display: selectedChampId ? 'none' : 'block' }}>
                 <div id="header">
-                    <h1>Mod Skin LoL Premium and Free Forever</h1>
-                    <button id="settingsToggle" onClick={() => setShowSettings(!showSettings)}>
-                        ⚙️ Settings
-                    </button>
+                    <div className="header-left">
+                        <img src={Logo} alt="logo" style={{ width: '50px', height: '50px' }} />
+                        <div className="header-title">
+                            <h1>Mod Skin LoL</h1>
+                            <div className="subtitle">PREMIUM COLLECTION</div>
+                        </div>
+                    </div>
+                    <div className="header-right">
+                        <button id="settingsToggle" onClick={() => setShowSettings(!showSettings)}>
+                            ⚙️ SETTINGS
+                        </button>
+                    </div>
                 </div>
 
                 {showSettings && (
@@ -275,68 +293,74 @@ const App: React.FC = () => {
                     </div>
                 )}
 
-                <input
-                    type="text"
-                    id="searchInput"
-                    placeholder="Search champions..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                <div className="filter-controls">
+                    <div className="filter-icons">
+                        <button
+                            className={`filter-icon-btn ${activeFilters.roles.size === 0 && activeFilters.classes.size === 0 ? 'active' : ''}`}
+                            onClick={clearFilters}
+                            title="All Champions"
+                        >
+                            ✨
+                        </button>
+                        {[
+                            { id: 'top', icon: TopIcon, label: 'Top' },
+                            { id: 'jungle', icon: JungleIcon, label: 'Jungle' },
+                            { id: 'mid', icon: MidIcon, label: 'Mid' },
+                            { id: 'adc', icon: ADCIcon, label: 'ADC' },
+                            { id: 'support', icon: SupportIcon, label: 'Support' },
+                        ].map(r => (
+                            <button
+                                key={r.id}
+                                className={`filter-icon-btn ${activeFilters.roles.has(r.id) ? 'active' : ''}`}
+                                onClick={() => toggleFilter('roles', r.id)}
+                                title={r.label}
+                            >
+                                <img src={r.icon} alt={r.label} />
+                            </button>
+                        ))}
+                        <button className="filter-icon-btn" onClick={clearFilters} title="Reset Filters">
+                            🔄
+                        </button>
+                    </div>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search champions..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
 
-                <div id="filterContainer">
-                    <div className="filter-section">
-                        <h3>Roles</h3>
-                        <div className="filter-buttons">
-                            {[
-                                { id: 'top', label: 'Top', icon: TopIcon },
-                                { id: 'jungle', label: 'Jungle', icon: JungleIcon },
-                                { id: 'mid', label: 'Mid', icon: MidIcon },
-                                { id: 'adc', label: 'ADC', icon: ADCIcon },
-                                { id: 'support', label: 'Support', icon: SupportIcon },
-                            ].map(r => (
-                                <button
-                                    key={r.id}
-                                    className={`role-filter ${activeFilters.roles.has(r.id) ? 'active' : ''}`}
-                                    onClick={() => toggleFilter('roles', r.id)}
-                                >
-                                    <img src={r.icon} alt={r.label} />
-                                    <span>{r.label}</span>
-                                </button>
-                            ))}
-                        </div>
-                        <button id="clearFilters" className="clear-filters-btn" onClick={clearFilters}>
-                        🔁
+                <div className="classes-filter">
+                    <span className="classes-label">CLASSES:</span>
+                    {[
+                        { id: 'tank', label: 'Tank', icon: TankIcon },
+                        { id: 'fighter', label: 'Fighter', icon: FighterIcon },
+                        { id: 'slayer', label: 'Slayer', icon: SlayerIcon },
+                        { id: 'marksman', label: 'Marksman', icon: MarksmanIcon },
+                        { id: 'mage', label: 'Mage', icon: MageIcon },
+                        { id: 'controller', label: 'Controller', icon: ControllerIcon },
+                    ].map(c => (
+                        <button
+                            key={c.id}
+                            className={`class-filter-btn ${activeFilters.classes.has(c.id) ? 'active' : ''}`}
+                            onClick={() => toggleFilter('classes', c.id)}
+                        >
+                            <img src={c.icon} alt={c.label} />
+                            {c.label}
+                        </button>
+                    ))}
+                    <button
+                        className="sort-toggle-btn"
+                        onClick={() => setSortBy(sortBy === 'asc' ? 'desc' : 'asc')}
+                        title={sortBy === 'asc' ? 'Sort: A-Z' : 'Sort: Z-A'}
+                    >
+                        {sortBy === 'asc' ? '▲' : '▼'}
                     </button>
-                    </div>
-
-                    <div className="filter-section">
-                        <h3>Classes</h3>
-                        <div className="filter-buttons">
-                            {[
-                                { id: 'tank', label: 'Tank', icon: TankIcon },
-                                { id: 'fighter', label: 'Fighter', icon: FighterIcon },
-                                { id: 'slayer', label: 'Slayer', icon: SlayerIcon },
-                                { id: 'marksman', label: 'Marksman', icon: MarksmanIcon },
-                                { id: 'mage', label: 'Mage', icon: MageIcon },
-                                { id: 'controller', label: 'Controller', icon: ControllerIcon },
-                            ].map(c => (
-                                <button
-                                    key={c.id}
-                                    className={`class-filter ${activeFilters.classes.has(c.id) ? 'active' : ''}`}
-                                    onClick={() => toggleFilter('classes', c.id)}
-                                >
-                                    <img src={c.icon} alt={c.label} />
-                                    <span>{c.label}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    
                 </div>
 
                 <div className="champion-counter">
-                    Showing {filteredChampions.length} of {champions.length} champions
+                    SHOWING {filteredChampions.length} CHAMPIONS
                 </div>
 
                 <div id="championList">
@@ -345,6 +369,7 @@ const App: React.FC = () => {
                             <img
                                 src={`https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/${cleanChampionId(champ.id)}.png`}
                                 onError={(e) => (e.currentTarget.src = 'https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/Aatrox.png')}
+                                alt={champ.name_vi}
                             />
                             <span>{champ.name_vi}</span>
                         </div>
