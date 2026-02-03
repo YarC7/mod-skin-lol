@@ -23,4 +23,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getProfilePaths: () => ipcRenderer.invoke("launcher:get-profile-paths"),
   log: (level: "info" | "warn" | "error", message: string) => ipcRenderer.invoke("launcher:log", level, message),
   getLogPath: () => ipcRenderer.invoke("launcher:get-log-path"),
+  minimize: () => ipcRenderer.send("window:minimize"),
+  maximize: () => ipcRenderer.send("window:maximize"),
+  close: () => ipcRenderer.send("window:close"),
 });

@@ -58,7 +58,7 @@ html {
 
 .app-container {
   max-width: 100%;
-  padding: 0 20px;
+  padding: 40px 20px 0;
   transition: background-color 0.3s ease, color 0.3s ease;
   /* Hide scrollbar but keep scroll functionality */
   scrollbar-width: none;
@@ -550,11 +550,12 @@ h1 {
 
 #detailApp {
   display: flex;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 60px);
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
+  margin: 12px 0;
 }
 
 #sidebar {

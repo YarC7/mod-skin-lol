@@ -480,6 +480,26 @@ const registerIpcHandlers = (): void => {
     }
   );
 
+  // Window control handlers
+  ipcMain.on("window:minimize", (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    window?.minimize();
+  });
+
+  ipcMain.on("window:maximize", (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (window?.isMaximized()) {
+      window.unmaximize();
+    } else {
+      window?.maximize();
+    }
+  });
+
+  ipcMain.on("window:close", (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    window?.close();
+  });
+
 };
 
 const createWindow = (): void => {
@@ -489,9 +509,10 @@ const createWindow = (): void => {
     width: 960,
     minHeight: 560,
     minWidth: 900,
+    frame: false,
     autoHideMenuBar: true,
     backgroundColor: "#05060d",
-    title: "CS-LOL Launcher",
+    title: "Mod Skin LoL",
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       contextIsolation: true,

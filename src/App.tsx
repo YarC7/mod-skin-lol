@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import './index.css';
+import TitleBar from './TitleBar';
 import Logo from '../assets/logo.png';
 // Asset Imports
 import TopIcon from '../assets/role/Top_icon.png';
@@ -37,6 +38,9 @@ declare global {
             getProfilePaths: () => Promise<{ name: string; folder: string; config: string } | null>;
             log: (level: "info" | "warn" | "error", message: string) => Promise<void>;
             getLogPath: () => Promise<string>;
+            minimize?: () => void;
+            maximize?: () => void;
+            close?: () => void;
         };
     }
 }
@@ -243,23 +247,17 @@ const App: React.FC = () => {
 
     return (
         <div className="app-container dark-theme">
+            <TitleBar
+                showBackButton={!!selectedChampId}
+                onBackClick={() => setSelectedChampId(null)}
+                title={selectedChampId && selectedChampSkins ? selectedChampSkins.name_vi : "Mod Skin LoL"}
+                showSettings={showSettings}
+                onSettingsToggle={() => setShowSettings(!showSettings)}
+            />
             {/* List View */}
             <div id="listView" style={{ display: selectedChampId ? 'none' : 'block' }}>
-                <div id="header">
-                    <div className="header-left">
-                        <img src={Logo} alt="logo" style={{ width: '50px', height: '50px' }} />
-                        <div className="header-title">
-                            <h1>Mod Skin LoL</h1>
-                            <div className="subtitle">PREMIUM COLLECTION</div>
-                        </div>
-                    </div>
-                    <div className="header-right">
-                        <button id="settingsToggle" onClick={() => setShowSettings(!showSettings)}>
-                            ⚙️ SETTINGS
-                        </button>
-                    </div>
+                <div style={{ padding: '16px' }}>
                 </div>
-
                 {showSettings && (
                     <div id="settingsPanel">
                         <div className="settings-group">
@@ -380,7 +378,6 @@ const App: React.FC = () => {
             {/* Detail View */}
             {selectedChampId && selectedChampSkins && (
                 <div id="detailView">
-                    <button id="backButton" onClick={() => setSelectedChampId(null)}>← Back to List</button>
                     <div id="detailApp">
                         <div id="sidebar">
                             <div id="skinList">
@@ -419,3 +416,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

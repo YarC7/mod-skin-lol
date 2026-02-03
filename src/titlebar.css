@@ -1,0 +1,161 @@
+/* Custom Title Bar Styles */
+.title-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    z-index: 10000;
+    -webkit-app-region: drag;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.title-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+    margin-left: 5px;
+    min-width: 100px;
+}
+
+.title-bar-back-button {
+    -webkit-app-region: no-drag;
+    background: linear-gradient(135deg, #c89b3c 0%, #f0e6d2 50%, #c89b3c 100%);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #0a0e27;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(200, 155, 60, 0.4);
+}
+
+.title-bar-back-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(200, 155, 60, 0.6);
+    background: linear-gradient(135deg, #f0e6d2 0%, #c89b3c 50%, #f0e6d2 100%);
+}
+
+.title-bar-back-button:active {
+    transform: translateY(0);
+}
+
+.title-bar-back-button.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.title-bar-center {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.title-bar-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.title-bar-title {
+    font-size: 14px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #c89b3c 0%, #f0e6d2 50%, #c89b3c 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.title-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.title-bar-settings-btn {
+    -webkit-app-region: no-drag;
+    background: transparent;
+    border: none;
+    width: 40px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #f0e6d2;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.title-bar-settings-btn:hover {
+    background: rgba(200, 155, 60, 0.2);
+    color: #c89b3c;
+}
+
+.title-bar-settings-btn.active {
+    background: rgba(200, 155, 60, 0.3);
+    color: #c89b3c;
+}
+
+
+.title-bar-button {
+    -webkit-app-region: no-drag;
+    background: transparent;
+    border: none;
+    width: 40px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #f0e6d2;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+}
+
+.title-bar-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.title-bar-button.minimize:hover {
+    background: rgba(200, 155, 60, 0.2);
+}
+
+.title-bar-button.maximize:hover {
+    background: rgba(200, 155, 60, 0.2);
+}
+
+.title-bar-button.close:hover {
+    background: #e81123;
+    color: white;
+}
+
+/* Adjust app container to account for title bar */
+.app-container {
+    padding-top: 40px;
+}
+
+/* Make sure the title bar content doesn't get selected */
+.title-bar * {
+    user-select: none;
+}
