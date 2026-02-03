@@ -409,11 +409,11 @@ const App: React.FC = () => {
                 <div id="championList">
                     {filteredChampions.map(champ => (
                         <div key={champ.id} className="champion-item" onClick={() => handleShowDetail(champ.id)}>
-                            {/* <img
+                            <img
                                 src={`https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/${cleanChampionId(champ.id)}.png`}
                                 onError={(e) => (e.currentTarget.src = 'https://ddragon.leagueoflegends.com/cdn/16.2.1/img/champion/Aatrox.png')}
                                 alt={champ.name_vi}
-                            /> */}
+                            />
                             <span>{champ.name_vi}</span>
                         </div>
                     ))}
