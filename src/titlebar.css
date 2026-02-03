@@ -21,8 +21,7 @@
     align-items: center;
     gap: 10px;
     justify-content: flex-start;
-    margin-left: 5px;
-    min-width: 100px;
+    min-width: 192px;
 }
 
 .title-bar-back-button {
